@@ -80,8 +80,9 @@ async function connectWS(code){
  if(!CONFIG.API_BASE)return;
  try{
   const tk=await api.post('/ws-ticket');
-  const proto=location.protocol==='https:'?'wss:':'ws:';
-  WS=new WebSocket(`${proto}//${location.host}/ws/${code}?ticket=${tk.ticket}`);
+  const u=new URL(CONFIG.API_BASE,location.href);
+  const proto=u.protocol==='https:'?'wss:':'ws:';
+  WS=new WebSocket(`${proto}//${u.host}/ws/${code}?ticket=${tk.ticket}`);
   WS.onmessage=e=>{try{handleWS(JSON.parse(e.data))}catch(err){}};
  }catch(e){console.warn('WS fallback to BroadcastChannel:',e)}
 }
