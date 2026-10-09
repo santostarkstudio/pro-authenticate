@@ -9,9 +9,9 @@ A staff "hq" message asks one candidate to send larger frames while the intervie
 from dataclasses import dataclass
 from typing import Any, Optional
 
-FROM_CANDIDATE = {"frame": "staff", "work": "staff", "hello": "staff", "challenge_done": "staff", "chat": "staff"}
+FROM_CANDIDATE = {"frame": "staff", "work": "staff", "hello": "staff", "challenge_done": "staff", "chat": "staff", "signal": "staff"}
 FROM_STAFF = {"frame": "candidate", "chat": "candidate", "announce": "candidate", "challenge": "candidate",
-              "admit": "candidate", "end": "candidate", "verdict": "staff", "hq": "candidate"}
+              "admit": "candidate", "end": "candidate", "verdict": "staff", "hq": "candidate", "signal": "candidate"}
 OPEN_TO_ALL_CANDIDATES = {"frame", "announce"}     # interviewer camera and announcements carry no candidate data
 
 

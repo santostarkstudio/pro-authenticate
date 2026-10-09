@@ -22,7 +22,7 @@ def test_full_flow():
     assert c.post("/api/auth/login", json={"email": "a@x.com", "password": "bad"}).status_code == 401
     tok = c.post("/api/auth/login", json={"email": "a@x.com", "password": "pass123"}).json()["token"]
     h = {"Authorization": f"Bearer {tok}"}
-    iv = c.post("/api/interviews", json={"name": "Intern", "type": "Coding", "langs": ["Python"]}, headers=h).json()
+    iv = c.post("/api/interviews", json={"name": "Intern", "type": "Technical", "langs": ["Python"]}, headers=h).json()
     assert c.get("/api/interviews").status_code == 401
     j = c.post(f"/api/interviews/{iv['code']}/join", json={"name": "Sam"}).json()
     ch = {"Authorization": f"Bearer {j['token']}"}
@@ -34,7 +34,7 @@ def test_full_flow():
 def test_room_isolation():
     c = client()
     tok = c.post("/api/auth/login", json={"email": "a@x.com", "password": "pass123"}).json()["token"]
-    code = c.post("/api/interviews", json={"name": "I", "type": "Coding"}, headers={"Authorization": f"Bearer {tok}"}).json()["code"]
+    code = c.post("/api/interviews", json={"name": "I", "type": "Technical"}, headers={"Authorization": f"Bearer {tok}"}).json()["code"]
     ct = c.post(f"/api/interviews/{code}/join", json={"name": "Sam"}).json()["token"]
     def ticket(token):
         return c.post("/api/ws-ticket", headers={"Authorization": f"Bearer {token}"}).json()["ticket"]

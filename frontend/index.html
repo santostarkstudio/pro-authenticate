@@ -94,38 +94,162 @@ function handleWS(m){
  else if(m.type==='admit')onMsg({t:'adm_in'});
  else if(m.type==='chat')onMsg({t:'chat_in',text:m.text,name:m.name,from:m.from});
  else if(m.type==='hq')onMsg({t:'hq',cid:m.to,on:m.on});
+ else if(m.type==='signal')handleSignal(m);
+ else if(m.type==='hello'){if(S.v==='alive'&&(!S.sel||S.sel==m.cid)){S.sel=m.cid;setupWebRTC(true,m.cid)}}
 }
 
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const V=document.createElement('video');V.muted=true;V.playsInline=true;
+const V=document.createElement('video');V.muted=true;V.playsInline=true;V.autoplay=true;
 const hc=document.createElement('canvas');let HQ=false,X=null,REF={};
 const I=()=>DB.ivs[S.code],C=()=>I()&&I().c[S.cid];
 const clk=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}),lg=(c,m)=>c.log.push([clk(),m]);
 const save=()=>{ls.s('fg',JSON.stringify(DB));ch.postMessage({t:'db'})};
 ch.onmessage=e=>{const m=e.data;if(m.t=='db'){DB=JSON.parse(ls.g('fg')||'{"ivs":{}}');upd(1)}else if(m.code==S.code)onMsg(m)};
-async function startCam(){try{cam=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});V.srcObject=cam;await V.play();return 1}catch(e){return 0}}
-function stopCam(){cam&&cam.getTracks().forEach(t=>t.stop());cam=null;clearInterval(tm)}
+
+// ---- WebRTC Peer-to-Peer 30 FPS Audio & HD Video Engine
+const RTC_CONFIG={iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'}]};
+let PC=null,localStream=null,isMicMuted=false,isCamOff=false,currentPeer=null,iceQueue=[];
+
+async function setupWebRTC(isInitiator,targetCid){
+ closeWebRTC();currentPeer=targetCid||null;iceQueue=[];
+ try{
+  PC=new RTCPeerConnection(RTC_CONFIG);
+  PC.onicecandidate=e=>{if(e.candidate)wsSend({type:'signal',to:currentPeer,data:{candidate:e.candidate}})};
+  PC.ontrack=e=>{
+   const stream=e.streams[0];if(!stream)return;
+   const rem=$('#rem');
+   if(rem&&rem.tagName==='VIDEO'){
+    rem.srcObject=stream;rem.muted=false;rem.play().catch(()=>{});
+    const chip=$('#chip');if(chip){chip.textContent='● HD 30 FPS Live';chip.className='chip st-ok'}
+   }
+   const adm=$('#adm');
+   if(adm&&adm.tagName==='VIDEO'){
+    adm.srcObject=stream;adm.muted=false;adm.play().catch(()=>{});
+   }
+  };
+  if(localStream){localStream.getTracks().forEach(t=>PC.addTrack(t,localStream))}
+  if(isInitiator&&targetCid){
+   const offer=await PC.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:true});
+   await PC.setLocalDescription(offer);
+   wsSend({type:'signal',to:targetCid,data:{sdp:offer}});
+  }
+ }catch(err){console.warn('WebRTC error:',err)}
+}
+
+async function handleSignal(m){
+ const d=m.data;if(!d)return;
+ try{
+  if(d.sdp){
+   if(!PC)await setupWebRTC(false,m.cid);
+   await PC.setRemoteDescription(new RTCSessionDescription(d.sdp));
+   while(iceQueue.length){
+    const c=iceQueue.shift();
+    try{await PC.addIceCandidate(new RTCIceCandidate(c))}catch(e){}
+   }
+   if(d.sdp.type==='offer'){
+    const answer=await PC.createAnswer();
+    await PC.setLocalDescription(answer);
+    wsSend({type:'signal',to:m.cid,data:{sdp:answer}});
+   }
+  }else if(d.candidate){
+   if(PC&&PC.remoteDescription&&PC.remoteDescription.type){
+    await PC.addIceCandidate(new RTCIceCandidate(d.candidate));
+   }else{
+    iceQueue.push(d.candidate);
+   }
+  }
+ }catch(e){console.warn('Signal error:',e)}
+}
+
+function closeWebRTC(){if(PC){try{PC.close()}catch(e){}PC=null}iceQueue=[]}
+function toggleMic(){
+ if(!localStream)return;
+ const at=localStream.getAudioTracks();if(!at.length)return;
+ isMicMuted=!isMicMuted;at.forEach(t=>t.enabled=!isMicMuted);updMediaUI();
+}
+function toggleCam(){
+ if(!localStream)return;
+ const vt=localStream.getVideoTracks();if(!vt.length)return;
+ isCamOff=!isCamOff;vt.forEach(t=>t.enabled=!isCamOff);updMediaUI();
+}
+function updMediaUI(){
+ document.querySelectorAll('[data-a=tmic]').forEach(b=>{
+  b.innerHTML=isMicMuted?'🔇 Mic Muted':'🎙️ Mic On';
+  b.style.background=isMicMuted?'#B91C1C':'#15803D';
+  b.style.borderColor=isMicMuted?'#B91C1C':'#15803D';
+  b.style.color='#fff';
+ });
+ document.querySelectorAll('[data-a=tcam]').forEach(b=>{
+  b.innerHTML=isCamOff?'🚫 Cam Off':'📹 Cam On';
+  b.style.background=isCamOff?'#4B5563':'var(--cd)';
+  b.style.color=isCamOff?'#fff':'var(--fg)';
+ });
+}
+
+async function startCam(){
+ try{
+  cam=await navigator.mediaDevices.getUserMedia({
+   video:{width:{ideal:1280,min:640},height:{ideal:720,min:480},frameRate:{ideal:30}},
+   audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}
+  });
+  localStream=cam;V.srcObject=cam;await V.play();
+  isMicMuted=false;isCamOff=false;updMediaUI();return 1;
+ }catch(e){
+  try{
+   cam=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false});
+   localStream=cam;V.srcObject=cam;await V.play();
+   isMicMuted=true;isCamOff=false;updMediaUI();return 1;
+  }catch(err){return 0}
+ }
+}
+function stopCam(){
+ if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}
+ cam=null;closeWebRTC();clearInterval(tm);
+}
 async function analyze(cv,x){
- if(CONFIG.API_BASE){try{const r=await fetch(CONFIG.API_BASE+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:cv.toDataURL('image/jpeg',.6),session:String(S.cid||'')})});return await r.json()}catch(e){}}
+ if(CONFIG.API_BASE){try{const r=await fetch(CONFIG.API_BASE+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:cv.toDataURL('image/jpeg',.5),session:String(S.cid||'')})});return await r.json()}catch(e){}}
  const d=x.getImageData(0,0,160,120).data,n=d.length/16,cur=new Float32Array(n),p=PV;let b=0,m=0;
  for(let i=0;i<n;i++){const j=i*16,g=(d[j]+d[j+1]+d[j+2])/3;cur[i]=g;b+=g;if(p)m+=Math.abs(g-p[i])}
  PV=cur;b/=n;m=p?m/n:2;let face=null;try{if(window.FaceDetector)face=(await new FaceDetector().detect(cv)).length}catch(e){}
  let live=b<35?15:m<.5?35:Math.min(95,55+m*10);if(face===0)live=Math.min(live,30);
  return{live:Math.round(live),b:Math.round(b),face,m:+m.toFixed(1)}}
-function startSend(k){clearInterval(tm);const cv=document.createElement('canvas');cv.width=160;cv.height=120;const x=cv.getContext('2d',{willReadFrequently:true});
- tm=setInterval(async()=>{if(!cam||V.readyState<2)return;x.drawImage(V,0,0,160,120);const img=cv.toDataURL('image/jpeg',.5);
- if(k=='c'){const res=await analyze(cv,x);let hq;if(HQ){hc.width=640;hc.height=480;hc.getContext('2d').drawImage(V,0,0,640,480);hq=hc.toDataURL('image/jpeg',.8)}ch.postMessage({t:'f',code:S.code,cid:S.cid,img,res,hq});wsSend({type:'frame',img,res,hq})}
- else{ch.postMessage({t:'a',code:S.code,img});wsSend({type:'frame',img})}},500)}
+
+function startSend(k){
+ clearInterval(tm);const cv=document.createElement('canvas');cv.width=160;cv.height=120;
+ const x=cv.getContext('2d',{willReadFrequently:true});
+ // Sample background frame every 1200ms to eliminate UI lag while preserving liveness checks
+ tm=setInterval(async()=>{
+  if(!cam||V.readyState<2)return;
+  x.drawImage(V,0,0,160,120);
+  if(k=='c'){
+   const res=await analyze(cv,x);let hq;
+   if(HQ){hc.width=640;hc.height=480;hc.getContext('2d').drawImage(V,0,0,640,480);hq=hc.toDataURL('image/jpeg',.7)}
+   const img=cv.toDataURL('image/jpeg',.4);
+   ch.postMessage({t:'f',code:S.code,cid:S.cid,img,res,hq});
+   wsSend({type:'frame',img,res,hq});
+  }else{
+   const img=cv.toDataURL('image/jpeg',.4);
+   ch.postMessage({t:'a',code:S.code,img});
+   wsSend({type:'frame',img});
+  }
+ },1200);
+}
 const vd=r=>!r?['No video yet','st-wa']:r.live>=70?['Verified · live signal '+r.live+'%','st-ok']:r.live>=40?['Borderline · '+r.live+'%','st-wa']:['Review needed · '+r.live+'%','st-er'];
 function onMsg(m){if(m.t=='hq'){if(m.cid==S.cid)HQ=!!m.on;return}
- if(m.t=='adm_in'&&S.v=='cwait'){S.v='croom';render();return}
+ if(m.t=='adm_in'&&S.v=='cwait'){S.v='croom';render();setupWebRTC(false);wsSend({type:'hello'});return}
  if(m.t=='chal_in'&&S.v=='croom'){const c=C();if(c){c.ch={t:m.text};updR()}return}
  if(m.t=='chat_in'){I().chat.push({w:m.from==='staff'?'a':'c',n:m.name||(m.from==='staff'?'Interviewer':'Candidate'),t:m.text});chatH();return}
  if(m.t=='f'&&S.v=='alive'){F[m.cid]={img:m.img,res:m.res,hq:m.hq};if(!REF[m.cid])REF[m.cid]=m.hq||m.img;if(!S.sel)S.sel=m.cid;if(X&&X.cid==m.cid)xupd();
-  if(m.cid==S.sel){const r=$('#rem');if(r)r.src=m.img;updV();if(m.res&&m.res.live<70&&Date.now()-lastEv>6000){lastEv=Date.now();EV.unshift({t:clk(),img:m.img,l:m.res.live});EV.length=Math.min(EV.length,6);updE()}}}
- else if(m.t=='a'&&S.v=='croom'){LAST.a=m.img;const r=$('#adm');if(r)r.src=m.img}
+  if(m.cid==S.sel){
+   const r=$('#rem');
+   if(r&&r.tagName!=='VIDEO'&&!r.srcObject)r.src=m.img;
+   updV();
+   if(m.res&&m.res.live<70&&Date.now()-lastEv>6000){lastEv=Date.now();EV.unshift({t:clk(),img:m.img,l:m.res.live});EV.length=Math.min(EV.length,6);updE()}
+  }
+ }
+ else if(m.t=='a'&&S.v=='croom'){LAST.a=m.img;const r=$('#adm');if(r&&r.tagName!=='VIDEO'&&!r.srcObject)r.src=m.img}
  else if(m.t=='w'&&S.v=='alive'){WK[m.cid]=m.txt;updW()}}
-function updV(){const f=F[S.sel],r=f&&f.res,[t,c]=vd(r),k=$('#chip');if(k){k.textContent=t;k.className='chip '+c}
+function updV(){const f=F[S.sel],r=f&&f.res,[t,c]=vd(r),k=$('#chip');if(k&&k.textContent.indexOf('30 FPS')===-1){k.textContent=t;k.className='chip '+c}
  const v=$('#verd');if(v)v.innerHTML=r?`<div class=bar><i class="${c}" style="width:${r.live}%"></i></div><p class=mono>Liveness signal ${r.live}% · Light ${r.b}/255 · Motion ${r.m} · Faces ${r.face==null?'n/a':r.face}</p><p class=mono>Identity match: verified by backend</p>`:'<p class=mu>Waiting for video.</p>'}
 
 const updE=()=>{const e=$('#evid');if(e)e.innerHTML=EV.map(x=>`<div><img src="${x.img}" width=80 height=60 alt="Evidence frame"><div class=mono style="font-size:11px">${x.t} · ${x.l}%</div></div>`).join('')||'<p class=mu>None yet.</p>'};
@@ -179,11 +303,11 @@ ${cm=='login'?`<div style="margin-bottom:24px"><h2 style="margin:0 0 4px">Candid
 </section></main>`}
 function adash(){const L=Object.entries(DB.ivs).reverse().map(([k,v])=>`<div class="card row" style="justify-content:space-between;margin-top:10px"><div><b>${esc(v.name)}</b><div class="mu mono">Code <span class=mono style="letter-spacing:2px;font-weight:700">${k}</span> · ${v.type} · ${v.level} · ${Object.keys(v.c).length} candidate(s)</div></div><div class=row style="gap:8px"><button class=pri data-a=open data-x=${k}>Open Console</button><button class=dng data-a=del data-x=${k} style="min-height:36px;padding:0 12px;font-size:13px" title="Delete interview">Delete</button></div></div>`).join('')||'<p class=mu>No interviews yet. Create one below.</p>';
  return hdr('Dashboard')+`<div class=row style="align-items:flex-start;padding:18px;gap:18px"><section class=card style="flex:1 1 300px;max-width:380px"><h2>Create interview</h2><label>Name<input id=nm value="Software Intern · Round 1"></label><label>Type<select id=ty><option>Technical</option><option>Non-Technical</option></select></label><label>Security level<select id=lv><option>Basic</option><option selected>Standard</option><option>Hard</option></select></label><label>Allowed languages</label><div class=row>${Object.keys(T).map(k=>`<label style="margin:0"><input type=checkbox class=lgc value="${k}" checked style="width:18px;min-height:18px"> ${k}</label>`).join('')}</div><button class=pri data-a=create style="margin-top:14px;width:100%">Create and get code</button></section><section style="flex:2 1 400px"><h2>Interviews</h2>${L}</section></div>`}
-function alive(){const v=I();return hdr(esc(v.name)+' · code '+S.code,'<button data-a=back>Dashboard</button>')+`<div class=grid><aside class=card><h2>Lobby</h2><div id=lobby></div><p class=mu style="font-size:13px">Candidates join with code <b class=mono>${S.code}</b> in another tab.</p></aside><section><div class=vid data-a=xp title="Click to expand"><img id=rem alt="Candidate video. Click to expand."><div id=chip class="chip st-wa">No video yet</div><span class=chip style="left:auto;right:10px;background:rgba(0,0,0,.6)">Click to expand</span></div><div class=row style="margin:10px 0"><button data-a=acam>My camera on/off</button><button class=pri data-a=chal>Send random challenge</button><button data-a=flag>Flag moment</button></div><div class=card><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div></section><aside style="display:grid;gap:14px;align-content:start"><div class=card><h2>Verification</h2><div id=verd></div><p id=eng class=mu style="font-size:12px">Engine: built-in demo (motion and light check only).</p></div><div class=card><h2>Evidence</h2><div id=evid class=row></div></div><div class=card><h2>Candidate workspace</h2><pre id=wk class=mono style="white-space:pre-wrap;max-height:130px;overflow:auto;margin:0"></pre></div><div class=card><h2>Decision</h2><div class=row><button class=pri data-a=dec data-x=Shortlisted>Shortlist</button><button data-a=dec data-x=Hold>Hold</button><button class=dng data-a=dec data-x=Rejected>Reject</button></div><div id=logp class="log mono" style="margin-top:10px"></div></div></aside></div>`}
+function alive(){const v=I();return hdr(esc(v.name)+' · code '+S.code,'<button data-a=back>Dashboard</button>')+`<div class=grid><aside class=card><h2>Lobby</h2><div id=lobby></div><p class=mu style="font-size:13px">Candidates join with code <b class=mono>${S.code}</b> in another tab.</p></aside><section><div class=vid data-a=xp title="Click to expand"><video id=rem autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video><div id=chip class="chip st-wa">Connecting video...</div><span class=chip style="left:auto;right:10px;background:rgba(0,0,0,.6)">Click to expand</span></div><div class=row style="margin:10px 0;gap:8px"><button data-a=tmic class=pri style="background:#15803D;border-color:#15803D">🎙️ Mic On</button><button data-a=tcam>📹 Cam On</button><button data-a=acam>Restart Cam</button><button class=pri data-a=chal>Send challenge</button><button data-a=flag>Flag moment</button></div><div class=card><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div></section><aside style="display:grid;gap:14px;align-content:start"><div class=card><h2>Verification</h2><div id=verd></div><p id=eng class=mu style="font-size:12px">Engine: built-in demo (motion and light check only).</p></div><div class=card><h2>Evidence</h2><div id=evid class=row></div></div><div class=card><h2>Candidate workspace</h2><pre id=wk class=mono style="white-space:pre-wrap;max-height:130px;overflow:auto;margin:0"></pre></div><div class=card><h2>Decision</h2><div class=row><button class=pri data-a=dec data-x=Shortlisted>Shortlist</button><button data-a=dec data-x=Hold>Hold</button><button class=dng data-a=dec data-x=Rejected>Reject</button></div><div id=logp class="log mono" style="margin-top:10px"></div></div></aside></div>`}
 const slot='<div id=slf style="width:100%;height:100%"></div>';
 function cjoin(){const v=I(),cu=S.candUser;
  const vbadge=cu&&cu.is_verified?`<div class=badge-verified style="margin:10px 0"><span>✓</span> Identity verified · ${esc(cu.name)}</div>`:'';
- return`<main class=narrow><section class=card><div class="mu mono">YOU'RE INVITED</div><h1>${esc(v.name)}</h1><p class=mu>${v.type} interview. This session is recorded and your video is checked automatically to confirm it is you. Your interviewer can enlarge your video to look more closely. Other candidates never see you.</p>${vbadge}<label>Your name<input id=nm value="${cu?esc(cu.name):''}"></label><div class=vid style="margin-top:12px;max-height:240px">${slot}</div><p id=cs class=mu>Camera is off.</p><button data-a=cam>Turn on camera</button><label class=row style="margin-top:12px;color:var(--fg)"><input type=checkbox id=cn style="width:20px;min-height:20px">I agree to recording and automatic verification.</label><button class=pri data-a=enter style="margin-top:14px;width:100%">Enter waiting room</button><p id=err class=er></p></section></main>`}
+ return`<main class=narrow><section class=card><div class="mu mono">YOU'RE INVITED</div><h1>${esc(v.name)}</h1><p class=mu>${v.type} interview. This session is recorded and your video is checked automatically to confirm it is you. Your interviewer can enlarge your video to look more closely. Other candidates never see you.</p>${vbadge}<label>Your name<input id=nm value="${cu?esc(cu.name):''}"></label><div class=vid style="margin-top:12px;max-height:240px">${slot}</div><p id=cs class=mu>Camera is off.</p><button data-a=cam>Turn on camera &amp; mic</button><label class=row style="margin-top:12px;color:var(--fg)"><input type=checkbox id=cn style="width:20px;min-height:20px">I agree to recording and automatic verification.</label><button class=pri data-a=enter style="margin-top:14px;width:100%">Enter waiting room</button><p id=err class=er></p></section></main>`}
 const cwait=()=>`<main class=narrow><section class=card style="text-align:center"><h1>Waiting to be admitted</h1><p class=mu>The interviewer will let you in shortly. Keep this tab open.</p><div class=vid style="max-height:240px">${slot}</div></section></main>`;
 const cdone=()=>`<main class=narrow><section class=card style="text-align:center"><h1>Thank you</h1><p class=mu>This session has ended. You can close this tab.</p><button data-a=cout>Back to start</button></section></main>`;
 function cverify(){const cu=S.candUser||{};
@@ -191,9 +315,9 @@ function cverify(){const cu=S.candUser||{};
 function croom(){const v=I(),cd=v.type=='Technical';
  const w=cd?`<div class=row><label style="margin:0">Language <select id=lgs style="width:auto">${v.langs.map(l=>`<option ${l==lang?'selected':''}>${l}</option>`).join('')}</select></label><span style="flex:1"></span><button class=pri data-a=run>Run</button></div><p class=mu>Write function <b>firstUnique(s)</b>: the first non-repeating character, or null.</p><textarea id=ed spellcheck=false>${esc(D[lang]??T[lang])}</textarea><h2 style="margin-top:10px;font-size:16px">Output</h2><pre id=out class=mono style="min-height:70px;white-space:pre-wrap;margin:0">Press Run.</pre><p class=mu style="font-size:12px">Pasting is turned off in this editor.</p>`
  :`<div class=row style="justify-content:space-between"><div class="mu mono">QUESTION ${qi+1} OF ${Q.length}</div></div><h2 style="font-size:22px">${esc(Q[qi])}</h2><textarea id=pad style="font-family:inherit" placeholder="Type your answer here...">${esc(D['q'+qi]||'')}</textarea><div class=row style="margin-top:8px"><button data-a=nq data-x=-1 ${qi?'':'disabled'}>Previous</button><button class=pri data-a=nq data-x=1>${qi<Q.length-1?'Next':'Finish'}</button></div>`;
- return hdr(esc(v.name),'<button class=dng data-a=leave>Leave</button>')+`<div class=g2><section><div class=vid><img id=adm alt="Interviewer video"><div class=self>${slot}</div><div id=ov class=ov style="display:none"></div></div><div class=card style="margin-top:10px"><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div><p class=mu style="font-size:13px">Recorded with your consent. Your video is checked automatically.</p></section><section class=card>${w}</section></div>`}
+ return hdr(esc(v.name),'<button class=dng data-a=leave>Leave</button>')+`<div class=g2><section><div class=vid><video id=adm autoplay playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video><div class=self>${slot}</div><div id=ov class=ov style="display:none"></div></div><div class=row style="margin-top:8px;gap:8px"><button data-a=tmic class=pri style="background:#15803D;border-color:#15803D">🎙️ Mic On</button><button data-a=tcam>📹 Cam On</button></div><div class=card style="margin-top:10px"><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div><p class=mu style="font-size:13px">Recorded with your consent. Live audio &amp; video connected.</p></section><section class=card>${w}</section></div>`}
 function render(){if(S.v!='alive')xclose();document.body.className=(S.v=='adash'||S.v=='alive')?'dk':'';const views={home,adash,alive,cjoin,cwait,croom,cdone,cverify};$('#app').innerHTML=(views[S.v]||home)();
- const s=$('#slf');if(s)s.append(V);const r=$('#rem');if(r&&F[S.sel])r.src=F[S.sel].img;const a=$('#adm');if(a&&LAST.a)a.src=LAST.a;upd();if(S.v=='alive'&&CONFIG.API_BASE)fetch(CONFIG.API_BASE+'/health').then(r=>r.json()).then(h=>{const e=$('#eng');if(e)e.textContent='Engine: '+h.engine+' ('+h.mode+') '+(h.ai?'· ✨ Gemini AI Active':'')}).catch(()=>{})}
+ const s=$('#slf');if(s)s.append(V);const r=$('#rem');if(r&&!r.srcObject&&F[S.sel]&&r.tagName!=='VIDEO')r.src=F[S.sel].img;const a=$('#adm');if(a&&!a.srcObject&&LAST.a&&a.tagName!=='VIDEO')a.src=LAST.a;upd();updMediaUI();if(S.v=='alive'&&CONFIG.API_BASE)fetch(CONFIG.API_BASE+'/health').then(r=>r.json()).then(h=>{const e=$('#eng');if(e)e.textContent='Engine: '+h.engine+' ('+h.mode+') '+(h.ai?'· ✨ Gemini AI Active':'')}).catch(()=>{})}
 const send=t=>{ch.postMessage({t:'w',code:S.code,cid:S.cid,txt:t});wsSend({type:'work',txt:t})};
 async function loadInterviews(){
  if(!CONFIG.API_BASE||!api.tok())return;
@@ -365,19 +489,23 @@ async function act(a,x){if(xact(a,x))return;
   await connectWS(S.code);
   startSend('c');
  }
+ else if(a=='tmic'){toggleMic()}
+ else if(a=='tcam'){toggleCam()}
  else if(a=='adm'){
   const c=I().c[x];c.st='live';lg(c,'Admitted');
   if(!S.sel)S.sel=x;save();updA();
   wsSend({type:'admit',to:x});
   if(CONFIG.API_BASE&&api.tok()){try{await api.post('/candidates/'+x+'/status',{status:'admitted'})}catch(e){}}
+  setupWebRTC(true,x);
  }
  else if(a=='no'){
   const c=I().c[x];c.st='no';lg(c,'Not admitted');save();updA();
   wsSend({type:'end',to:x});
   if(CONFIG.API_BASE&&api.tok()){try{await api.post('/candidates/'+x+'/status',{status:'rejected'})}catch(e){}}
+  closeWebRTC();
  }
- else if(a=='sel'){S.sel=x;const r=$('#rem');if(r)r.src=F[x]?F[x].img:'';updA()}
- else if(a=='acam'){if(cam)stopCam();else if(await startCam())startSend('a')}
+ else if(a=='sel'){S.sel=x;setupWebRTC(true,x);updA()}
+ else if(a=='acam'){if(cam)stopCam();else if(await startCam()){startSend('a');if(S.sel)setupWebRTC(true,S.sel)}}
  else if(a=='chal'){
   const c=I().c[S.sel];if(!c)return;
   const o=['Turn your head slowly to the left','Blink twice','Show three fingers to the camera','Read aloud: '+(1000+Math.random()*9000|0)];
