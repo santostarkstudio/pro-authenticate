@@ -120,7 +120,13 @@ def create_app(cfg: Settings = default_settings, db: DB = None, verifier=None) -
 
     db.purge_older_than(cfg.retention_days)
     app = FastAPI(title="PRO-AUTHENTICATOR API")
-    app.add_middleware(CORSMiddleware, allow_origins=cfg.cors.split(","), allow_methods=["*"], allow_headers=["*"])
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r".*",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.middleware("http")
     async def safe_headers(request: Request, call_next):
