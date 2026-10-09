@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>PRO-AUTHENTICATOR — Interview Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F9FD;--fg:#0B1020;--mu:#3B4660;--cd:#fff;--bd:#DDE4F2;--in:#EEF2FA;--ok:#15803D;--wa:#B45309;--er:#B91C1C;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0E1220;--fg:#F2F5FB;--mu:#B7C2DA;--cd:#161C30;--bd:#2A3350;--in:#0B0F1C;--ok:#4ADE80;--wa:#FBBF24;--er:#F87171}}
+:root[data-theme=dark],.dk{--bg:#080A12;--fg:#F2F5FB;--mu:#B7C2DA;--cd:#0F1424;--bd:#2A3350;--in:#0A0E1C;--ok:#4ADE80;--wa:#FBBF24;--er:#F87171}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Inter,system-ui,sans-serif}
+h1,h2,.lg{font-family:'Space Grotesk',sans-serif;margin:0}h1{font-size:34px}h2{font-size:18px;margin-bottom:8px}.lg{font-size:19px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:18px;box-sizing:border-box}
+button{font:inherit;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--fg);cursor:pointer}
+button:disabled{opacity:.5;cursor:default}.pri{background:#1D4ED8;color:#fff;border-color:#1D4ED8}.dng{border-color:var(--er);color:var(--er)}
+input,select,textarea{font:inherit;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--bd);background:var(--in);color:var(--fg);width:100%;box-sizing:border-box}
+textarea{padding:12px;min-height:220px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.6}
+label{display:block;font-size:14px;color:var(--mu);margin-top:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mu{color:var(--mu)}.mono{font-family:'JetBrains Mono',monospace;font-size:13px}.er{color:var(--er)}
+.hd{padding:10px 18px;border-bottom:1px solid var(--bd);gap:14px}
+.grid{display:grid;grid-template-columns:250px 1fr 340px;gap:14px;padding:14px}.g2{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:14px;padding:14px}
+@media(max-width:1000px){.grid,.g2{grid-template-columns:1fr}}
+.vid{position:relative;aspect-ratio:4/3;max-height:430px;background:#0D1120;border-radius:14px;overflow:hidden;width:100%}
+.vid img,.vid video{width:100%;height:100%;object-fit:cover;display:block}
+.chip{position:absolute;left:10px;top:10px;padding:6px 12px;border-radius:8px;font-weight:500;font-size:14px;color:#fff}
+.st-ok{background:#15803D}.st-wa{background:#B45309}.st-er{background:#B91C1C}
+.bar{height:8px;border-radius:4px;background:var(--bd)}.bar i{display:block;height:8px;border-radius:4px}
+.log,.chat{max-height:150px;overflow:auto;font-size:13px}.chat{font-size:14px}
+.ov{position:absolute;inset:0;background:rgba(11,16,32,.72);align-items:center;justify-content:center;padding:14px}.ov>div{background:#fff;color:#0B1020;padding:20px;border-radius:16px;text-align:center}
+.self{position:absolute;right:8px;bottom:8px;width:34%;aspect-ratio:4/3;border:2px solid #fff;border-radius:10px;overflow:hidden;background:#CBD6EE}
+.gate{display:grid;grid-template-columns:1.2fr 1fr;gap:0;min-height:90vh}@media(max-width:800px){.gate{grid-template-columns:1fr}}
+.hero{background:#0B1020;color:#F2F5FB;padding:56px 44px;display:flex;flex-direction:column;justify-content:center;gap:16px}.hero p{color:#B7C2DA;font-size:18px;margin:0;max-width:440px}
+.narrow{max-width:520px;margin:0 auto;padding:24px 16px}
+.vid[data-a=xp]{cursor:zoom-in}
+#xv{position:fixed;inset:0;z-index:8;background:#05070D;color:#F2F5FB;display:flex;flex-direction:column}
+.xt{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-bottom:1px solid #2A3350}
+.xb{flex:1;display:flex;min-height:0}
+.xs{flex:1;position:relative;overflow:hidden;cursor:grab;touch-action:none}
+.xs img{width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.xo{position:absolute;left:12px;bottom:12px;right:12px;background:rgba(0,0,0,.6);padding:10px 14px;border-radius:10px}
+.xr{display:none;width:280px;padding:12px;overflow:auto;border-left:1px solid #2A3350}.xr img{width:100%;border-radius:8px;margin-bottom:8px}
+.xf{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:10px 14px;border-top:1px solid #2A3350;font-size:13px}
+.xf label{display:flex;gap:8px;align-items:center;margin:0;color:#B7C2DA}.xf input{width:120px;min-height:24px;padding:0}
+@media(max-width:700px){h1{font-size:26px}.hd{padding:8px 12px;gap:8px}button{min-height:48px}input,select,textarea{font-size:16px}.vid{max-height:56vh}.hero{padding:32px 20px}.narrow{padding:12px}.g2,.grid{padding:8px;gap:10px}
+.xt{gap:6px;padding:8px}.xt button{padding:0 10px;font-size:14px}.xb{flex-direction:column}.xr{width:auto;max-height:35vh;border-left:0;border-top:1px solid #2A3350}.xf>span:not(#xm){display:none}.xf input{width:90px}.row{gap:6px}}
+@media(min-width:701px) and (max-width:1100px){.grid{grid-template-columns:230px 1fr}.grid>aside:last-child{grid-column:1/-1}.xr{width:220px}}
+@media(pointer:coarse){button,select,input[type=checkbox]{min-height:44px}.xs{cursor:default}}
+.tab-row{display:flex;border-bottom:1px solid var(--bd);margin-bottom:18px}
+.tab-btn{flex:1;padding:12px 10px;background:none;border:none;border-bottom:2px solid transparent;color:var(--mu);cursor:pointer;font-weight:600;font-size:14px;text-align:center;transition:all .15s}
+.tab-btn.active{color:#1D4ED8;border-bottom-color:#1D4ED8}
+.sub-toggle{display:flex;background:var(--in);padding:3px;border-radius:10px;margin-bottom:16px}
+.sub-toggle button{flex:1;min-height:34px;padding:4px 10px;border:none;background:none;border-radius:8px;font-size:13px;font-weight:500;color:var(--mu);cursor:pointer}
+.sub-toggle button.active{background:var(--cd);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.badge-verified{display:inline-flex;align-items:center;gap:6px;background:rgba(21,128,61,.12);color:var(--ok);border:1px solid rgba(21,128,61,.25);padding:4px 10px;border-radius:999px;font-size:13px;font-weight:600}
+</style><script src="config.js"></script></head><body><div id="app"></div>
+<script>
+const CONFIG={API_BASE:window.FG_API||''}; // later: your FastAPI URL, e.g. 'https://your-server/api'. Never put secret keys in this file.
+const Q=['Tell us about a project you are proud of.','A store\'s sales fell 10% last quarter. How would you find the cause?','Describe a time you handled a disagreement in a team.'];
+const T={JavaScript:'function firstUnique(s){\n  const c={};\n  for(const x of s)c[x]=(c[x]||0)+1;\n  for(const x of s)if(c[x]===1)return x;\n  return null;\n}',Python:'def first_unique(s):\n    pass',Java:'class Solution {\n}','C++':'// write your solution',SQL:'-- write your query'};
+const ls={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const defaultIvs={'DX8LLW':{name:'Software Engineer · Verification Demo',type:'Coding',level:'Standard',langs:['JavaScript','Python'],c:{},chat:[]},'DEMO01':{name:'General Assessment · Demo',type:'Non-coding',level:'Standard',langs:['JavaScript'],c:{},chat:[]}};
+let DB=JSON.parse(ls.g('fg')||'{"ivs":{}}');
+if(!DB.ivs)DB.ivs={};
+for(const [k,v] of Object.entries(defaultIvs)){if(!DB.ivs[k])DB.ivs[k]=v;}
+let S={v:'home',tab:'cand',staffMode:'login',candMode:'login',candUser:JSON.parse(sessionStorage.getItem('fg_cand_user')||'null')},cam=null,PV=null,D={},qi=0,F={},EV=[],LAST={},WK={},lang='JavaScript',tm=null,lastEv=0,ch,WS=null;
+try{ch=new BroadcastChannel('fg')}catch(e){ch={postMessage(){}}}
+
+const api={
+ tok:()=>sessionStorage.getItem('fg_tok')||'',
+ setTok:t=>t?sessionStorage.setItem('fg_tok',t):sessionStorage.removeItem('fg_tok'),
+ h:()=>{const hdr={'Content-Type':'application/json'};const t=sessionStorage.getItem('fg_tok');if(t)hdr['Authorization']='Bearer '+t;return hdr},
+ candTok:()=>sessionStorage.getItem('fg_cand_tok')||'',
+ setCandTok:t=>t?sessionStorage.setItem('fg_cand_tok',t):sessionStorage.removeItem('fg_cand_tok'),
+ candH:()=>{const hdr={'Content-Type':'application/json'};const t=sessionStorage.getItem('fg_cand_tok');if(t)hdr['Authorization']='Bearer '+t;return hdr},
+ async get(p){const r=await fetch(CONFIG.API_BASE+p,{headers:api.h()});if(!r.ok)throw new Error(await r.text());return r.json()},
+ async post(p,b){const r=await fetch(CONFIG.API_BASE+p,{method:'POST',headers:api.h(),body:JSON.stringify(b||{})});if(!r.ok){let m='Failed';try{const j=await r.json();m=j.detail||m}catch(e){m=await r.text()||m}throw new Error(m)}return r.json()},
+ async candPost(p,b){const r=await fetch(CONFIG.API_BASE+p,{method:'POST',headers:api.candH(),body:JSON.stringify(b||{})});if(!r.ok){let m='Failed';try{const j=await r.json();m=j.detail||m}catch(e){m=await r.text()||m}throw new Error(m)}return r.json()}
+};
+
+async function connectWS(code){
+ if(WS){try{WS.close()}catch(e){}WS=null}
+ if(!CONFIG.API_BASE)return;
+ try{
+  const tk=await api.post('/ws-ticket');
+  const proto=location.protocol==='https:'?'wss:':'ws:';
+  WS=new WebSocket(`${proto}//${location.host}/ws/${code}?ticket=${tk.ticket}`);
+  WS.onmessage=e=>{try{handleWS(JSON.parse(e.data))}catch(err){}};
+ }catch(e){console.warn('WS fallback to BroadcastChannel:',e)}
+}
+function wsSend(m){if(WS&&WS.readyState===WebSocket.OPEN){try{WS.send(JSON.stringify(m))}catch(e){}}}
+function handleWS(m){
+ if(m.type==='frame')onMsg({t:m.from==='candidate'?'f':'a',code:S.code,cid:m.cid,img:m.img,res:m.res,hq:m.hq});
+ else if(m.type==='work')onMsg({t:'w',code:S.code,cid:m.cid,txt:m.txt});
+ else if(m.type==='challenge')onMsg({t:'chal_in',text:m.text});
+ else if(m.type==='admit')onMsg({t:'adm_in'});
+ else if(m.type==='chat')onMsg({t:'chat_in',text:m.text,name:m.name,from:m.from});
+ else if(m.type==='hq')onMsg({t:'hq',cid:m.to,on:m.on});
+}
+
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const V=document.createElement('video');V.muted=true;V.playsInline=true;
+const hc=document.createElement('canvas');let HQ=false,X=null,REF={};
+const I=()=>DB.ivs[S.code],C=()=>I()&&I().c[S.cid];
+const clk=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}),lg=(c,m)=>c.log.push([clk(),m]);
+const save=()=>{ls.s('fg',JSON.stringify(DB));ch.postMessage({t:'db'})};
+ch.onmessage=e=>{const m=e.data;if(m.t=='db'){DB=JSON.parse(ls.g('fg')||'{"ivs":{}}');upd(1)}else if(m.code==S.code)onMsg(m)};
+async function startCam(){try{cam=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});V.srcObject=cam;await V.play();return 1}catch(e){return 0}}
+function stopCam(){cam&&cam.getTracks().forEach(t=>t.stop());cam=null;clearInterval(tm)}
+async function analyze(cv,x){
+ if(CONFIG.API_BASE){try{const r=await fetch(CONFIG.API_BASE+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:cv.toDataURL('image/jpeg',.6),session:String(S.cid||'')})});return await r.json()}catch(e){}}
+ const d=x.getImageData(0,0,160,120).data,n=d.length/16,cur=new Float32Array(n),p=PV;let b=0,m=0;
+ for(let i=0;i<n;i++){const j=i*16,g=(d[j]+d[j+1]+d[j+2])/3;cur[i]=g;b+=g;if(p)m+=Math.abs(g-p[i])}
+ PV=cur;b/=n;m=p?m/n:2;let face=null;try{if(window.FaceDetector)face=(await new FaceDetector().detect(cv)).length}catch(e){}
+ let live=b<35?15:m<.5?35:Math.min(95,55+m*10);if(face===0)live=Math.min(live,30);
+ return{live:Math.round(live),b:Math.round(b),face,m:+m.toFixed(1)}}
+function startSend(k){clearInterval(tm);const cv=document.createElement('canvas');cv.width=160;cv.height=120;const x=cv.getContext('2d',{willReadFrequently:true});
+ tm=setInterval(async()=>{if(!cam||V.readyState<2)return;x.drawImage(V,0,0,160,120);const img=cv.toDataURL('image/jpeg',.5);
+ if(k=='c'){const res=await analyze(cv,x);let hq;if(HQ){hc.width=640;hc.height=480;hc.getContext('2d').drawImage(V,0,0,640,480);hq=hc.toDataURL('image/jpeg',.8)}ch.postMessage({t:'f',code:S.code,cid:S.cid,img,res,hq});wsSend({type:'frame',img,res,hq})}
+ else{ch.postMessage({t:'a',code:S.code,img});wsSend({type:'frame',img})}},500)}
+const vd=r=>!r?['No video yet','st-wa']:r.live>=70?['Verified · live signal '+r.live+'%','st-ok']:r.live>=40?['Borderline · '+r.live+'%','st-wa']:['Review needed · '+r.live+'%','st-er'];
+function onMsg(m){if(m.t=='hq'){if(m.cid==S.cid)HQ=!!m.on;return}
+ if(m.t=='adm_in'&&S.v=='cwait'){S.v='croom';render();return}
+ if(m.t=='chal_in'&&S.v=='croom'){const c=C();if(c){c.ch={t:m.text};updR()}return}
+ if(m.t=='chat_in'){I().chat.push({w:m.from==='staff'?'a':'c',n:m.name||(m.from==='staff'?'Interviewer':'Candidate'),t:m.text});chatH();return}
+ if(m.t=='f'&&S.v=='alive'){F[m.cid]={img:m.img,res:m.res,hq:m.hq};if(!REF[m.cid])REF[m.cid]=m.hq||m.img;if(!S.sel)S.sel=m.cid;if(X&&X.cid==m.cid)xupd();
+  if(m.cid==S.sel){const r=$('#rem');if(r)r.src=m.img;updV();if(m.res&&m.res.live<70&&Date.now()-lastEv>6000){lastEv=Date.now();EV.unshift({t:clk(),img:m.img,l:m.res.live});EV.length=Math.min(EV.length,6);updE()}}}
+ else if(m.t=='a'&&S.v=='croom'){LAST.a=m.img;const r=$('#adm');if(r)r.src=m.img}
+ else if(m.t=='w'&&S.v=='alive'){WK[m.cid]=m.txt;updW()}}
+function updV(){const f=F[S.sel],r=f&&f.res,[t,c]=vd(r),k=$('#chip');if(k){k.textContent=t;k.className='chip '+c}
+ const v=$('#verd');if(v)v.innerHTML=r?`<div class=bar><i class="${c}" style="width:${r.live}%"></i></div><p class=mono>Liveness signal ${r.live}% · Light ${r.b}/255 · Motion ${r.m} · Faces ${r.face==null?'n/a':r.face}</p><p class=mono>Identity match: verified by backend</p>`:'<p class=mu>Waiting for video.</p>'}
+
+const updE=()=>{const e=$('#evid');if(e)e.innerHTML=EV.map(x=>`<div><img src="${x.img}" width=80 height=60 alt="Evidence frame"><div class=mono style="font-size:11px">${x.t} · ${x.l}%</div></div>`).join('')||'<p class=mu>None yet.</p>'};
+const updW=()=>{const e=$('#wk');if(e)e.textContent=WK[S.sel]||'(nothing yet)'};
+function chatH(){const e=$('#chat');if(e){e.innerHTML=(I().chat||[]).map(m=>`<div><b>${m.w=='a'?'Interviewer':esc(m.n)}:</b> ${esc(m.t)}</div>`).join('');e.scrollTop=1e9}}
+function updA(){const v=I();if(!v||!$('#lobby'))return;
+ $('#lobby').innerHTML=Object.entries(v.c).map(([k,c])=>`<div class=row style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)"><span><b>${esc(c.name)}</b><br><span class="mu mono">${c.st}${c.dec?' · '+c.dec:''}</span></span><span class=row>${c.st=='waiting'?`<button class=pri data-a=adm data-x=${k}>Admit</button><button data-a=no data-x=${k}>No</button>`:`<button data-a=sel data-x=${k}>${S.sel==k?'Viewing':'View'}</button>`}</span></div>`).join('')||'<p class=mu>Nobody yet.</p>';
+ updV();updE();updW();chatH();const c=v.c[S.sel];$('#logp').innerHTML=c?c.log.slice().reverse().map(l=>l[0]+' '+esc(l[1])).join('<br>'):''}
+function updR(){const c=C();if(!c)return;const o=$('#ov');if(o){o.innerHTML=c.ch?`<div><b>Quick check</b><h2>${esc(c.ch.t)}</h2><button class=pri data-a=cd>Done</button></div>`:'';o.style.display=c.ch?'flex':'none'}chatH()}
+function upd(m){if(S.v=='alive')updA();else if(S.v=='cwait'){const c=C();if(c&&c.st=='live'){S.v='croom';render()}else if(c&&c.st=='no'){S.v='cdone';render()}}
+ else if(S.v=='croom')updR();else if(m&&S.v=='adash'&&!document.activeElement.matches('input,select'))render()}
+const hdr=(t,b)=>`<header class="row hd"><img src="logo.png" alt="Logo" style="width:30px;height:30px;border-radius:6px;object-fit:cover"><span class=lg>PRO-AUTHENTICATOR</span><span class=mu>${t}</span><span style="flex:1"></span>${b||'<button data-a=out>Sign out</button>'}</header>`;
+function home(){
+const sm=S.staffMode||'login', cm=S.candMode||'login';
+return`<main class=gate><section class=hero><div class="row" style="gap:14px;align-items:center;margin-bottom:8px"><img src="logo.png" alt="PRO-AUTHENTICATOR" style="width:60px;height:60px;border-radius:12px;box-shadow:0 0 24px rgba(26,152,193,0.35)"><span class=lg style="font-size:24px;font-weight:700">PRO-AUTHENTICATOR</span></div><h1>VERIFIED IDENTITY.<br>SECURE INTEGRITY.</h1><p>Ensure assessment integrity with continuous identity verification, automated liveness detection, and audit-ready reporting.</p><div style="margin-top:28px;display:flex;flex-direction:column;gap:10px;color:#8BA4CC;font-size:14px"><div style="display:flex;gap:10px;align-items:center"><span style="width:28px;height:28px;border-radius:50%;background:rgba(29,78,216,.3);display:flex;align-items:center;justify-content:center;font-size:12px">🎥</span>Continuous liveness &amp; face verification</div><div style="display:flex;gap:10px;align-items:center"><span style="width:28px;height:28px;border-radius:50%;background:rgba(29,78,216,.3);display:flex;align-items:center;justify-content:center;font-size:12px">🔒</span>End-to-end encrypted sessions</div><div style="display:flex;gap:10px;align-items:center"><span style="width:28px;height:28px;border-radius:50%;background:rgba(29,78,216,.3);display:flex;align-items:center;justify-content:center;font-size:12px">📋</span>Audit-ready compliance reports</div></div></section>
+<section class=card style="border-radius:0;display:flex;flex-direction:column;justify-content:center;padding:44px 48px;gap:0;min-height:90vh">
+<div class=tab-row><button class="tab-btn ${S.tab=='staff'?'active':''}" data-a=htab data-x=staff>🏢 Enterprise</button><button class="tab-btn ${S.tab=='cand'?'active':''}" data-a=htab data-x=cand>👤 Candidate</button></div>
+${S.tab=='staff'?`
+<div class=sub-toggle><button class="${sm=='login'?'active':''}" data-a=smode data-x=login>Sign In</button><button class="${sm=='register'?'active':''}" data-a=smode data-x=register>Register Company</button></div>
+${sm=='login'?`<div style="margin-bottom:24px"><h2 style="margin:0 0 4px">Welcome back</h2><p class=mu style="margin:0;font-size:14px">Sign in to your enterprise account</p></div>
+<label style="margin-top:0">Email address<input id=em placeholder="hr@company.com" autocomplete=email></label>
+<label>Password<input id=pw type=password placeholder="Your password" autocomplete=current-password></label>
+<button class=pri data-a=login style="margin-top:20px;width:100%;min-height:48px;font-size:16px;font-weight:600;letter-spacing:.3px">Sign In</button>
+<p class="mu" style="margin-top:12px;font-size:12px;text-align:center;border-top:1px solid var(--bd);padding-top:12px">Demo credentials: <span class=mono>hr@company.com</span> / <span class=mono>demo</span></p>
+`:`<div style="margin-bottom:24px"><h2 style="margin:0 0 4px">Register your company</h2><p class=mu style="margin:0;font-size:14px">Create an enterprise account to start conducting interviews</p></div>
+<label style="margin-top:0">Company name<input id=sco placeholder="Acme Corp" autocomplete=organization></label>
+<label>Work email<input id=sem placeholder="admin@company.com" autocomplete=email></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label>Password<input id=spw type=password placeholder="Min 6 chars"></label><label>Confirm<input id=spw2 type=password placeholder="Repeat"></label></div>
+<button class=pri data-a=staff-register style="margin-top:20px;width:100%;min-height:48px;font-size:16px;font-weight:600">Create Enterprise Account</button>
+`}
+<p id=err class=er style="margin-top:10px;font-size:13px"></p>
+`:/* candidate tab */`
+<div class=sub-toggle><button class="${cm=='login'?'active':''}" data-a=cmode data-x=login>Sign In</button><button class="${cm=='register'?'active':''}" data-a=cmode data-x=register>Create Account</button><button class="${cm=='code'?'active':''}" data-a=cmode data-x=code>Join with Code</button></div>
+${cm=='login'?`<div style="margin-bottom:24px"><h2 style="margin:0 0 4px">Candidate sign in</h2><p class=mu style="margin:0;font-size:14px">Access your account to join an interview</p></div>
+<label style="margin-top:0">Email address<input id=cem placeholder="you@email.com" autocomplete=email></label>
+<label>Password<input id=cpw type=password placeholder="Your password" autocomplete=current-password></label>
+<button class=pri data-a=cand-login style="margin-top:20px;width:100%;min-height:48px;font-size:16px;font-weight:600">Sign In</button>
+<p class=mu style="margin-top:12px;font-size:13px;text-align:center;border-top:1px solid var(--bd);padding-top:12px">Don't have an account? <button data-a=cmode data-x=register style="min-height:unset;padding:0;background:none;border:none;color:#1D4ED8;cursor:pointer;font:inherit;font-size:13px;font-weight:600">Create one →</button></p>
+`:cm=='register'?`<div style="margin-bottom:24px"><h2 style="margin:0 0 4px">Create your account</h2><p class=mu style="margin:0;font-size:14px">Register once, join any interview with verified identity</p></div>
+<label style="margin-top:0">Full name<input id=cnm placeholder="Your full name" autocomplete=name></label>
+<label>Email address<input id=cem placeholder="you@email.com" autocomplete=email></label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label>Password<input id=cpw type=password placeholder="Min 6 chars"></label><label>Confirm<input id=cpw2 type=password placeholder="Repeat"></label></div>
+<button class=pri data-a=cand-register style="margin-top:20px;width:100%;min-height:48px;font-size:16px;font-weight:600">Create Account</button>
+<p class=mu style="margin-top:12px;font-size:13px;text-align:center;border-top:1px solid var(--bd);padding-top:12px">Already have an account? <button data-a=cmode data-x=login style="min-height:unset;padding:0;background:none;border:none;color:#1D4ED8;cursor:pointer;font:inherit;font-size:13px;font-weight:600">Sign in →</button></p>
+`:`<div style="margin-bottom:24px"><h2 style="margin:0 0 4px">Join interview</h2><p class=mu style="margin:0;font-size:14px">Enter the 6-character code given by your interviewer</p></div>
+<label style="margin-top:0">Interview code<input id=cc placeholder="e.g. DX8LLW" style="letter-spacing:4px;font-weight:700;font-size:22px;text-transform:uppercase;text-align:center" autocomplete=off></label>
+<button class=pri data-a=join style="margin-top:20px;width:100%;min-height:48px;font-size:16px;font-weight:600">Join Interview →</button>
+`}
+<p id=err class=er style="margin-top:10px;font-size:13px"></p>
+`}
+</section></main>`}
+function adash(){const L=Object.entries(DB.ivs).reverse().map(([k,v])=>`<div class="card row" style="justify-content:space-between;margin-top:10px"><div><b>${esc(v.name)}</b><div class="mu mono">Code <span class=mono style="letter-spacing:2px;font-weight:700">${k}</span> · ${v.type} · ${v.level} · ${Object.keys(v.c).length} candidate(s)</div></div><div class=row style="gap:8px"><button class=pri data-a=open data-x=${k}>Open Console</button><button class=dng data-a=del data-x=${k} style="min-height:36px;padding:0 12px;font-size:13px" title="Delete interview">Delete</button></div></div>`).join('')||'<p class=mu>No interviews yet. Create one below.</p>';
+ return hdr('Dashboard')+`<div class=row style="align-items:flex-start;padding:18px;gap:18px"><section class=card style="flex:1 1 300px;max-width:380px"><h2>Create interview</h2><label>Name<input id=nm value="Software Intern · Round 1"></label><label>Type<select id=ty><option>Technical</option><option>Non-Technical</option></select></label><label>Security level<select id=lv><option>Basic</option><option selected>Standard</option><option>Hard</option></select></label><label>Allowed languages</label><div class=row>${Object.keys(T).map(k=>`<label style="margin:0"><input type=checkbox class=lgc value="${k}" checked style="width:18px;min-height:18px"> ${k}</label>`).join('')}</div><button class=pri data-a=create style="margin-top:14px;width:100%">Create and get code</button></section><section style="flex:2 1 400px"><h2>Interviews</h2>${L}</section></div>`}
+function alive(){const v=I();return hdr(esc(v.name)+' · code '+S.code,'<button data-a=back>Dashboard</button>')+`<div class=grid><aside class=card><h2>Lobby</h2><div id=lobby></div><p class=mu style="font-size:13px">Candidates join with code <b class=mono>${S.code}</b> in another tab.</p></aside><section><div class=vid data-a=xp title="Click to expand"><img id=rem alt="Candidate video. Click to expand."><div id=chip class="chip st-wa">No video yet</div><span class=chip style="left:auto;right:10px;background:rgba(0,0,0,.6)">Click to expand</span></div><div class=row style="margin:10px 0"><button data-a=acam>My camera on/off</button><button class=pri data-a=chal>Send random challenge</button><button data-a=flag>Flag moment</button></div><div class=card><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div></section><aside style="display:grid;gap:14px;align-content:start"><div class=card><h2>Verification</h2><div id=verd></div><p id=eng class=mu style="font-size:12px">Engine: built-in demo (motion and light check only).</p></div><div class=card><h2>Evidence</h2><div id=evid class=row></div></div><div class=card><h2>Candidate workspace</h2><pre id=wk class=mono style="white-space:pre-wrap;max-height:130px;overflow:auto;margin:0"></pre></div><div class=card><h2>Decision</h2><div class=row><button class=pri data-a=dec data-x=Shortlisted>Shortlist</button><button data-a=dec data-x=Hold>Hold</button><button class=dng data-a=dec data-x=Rejected>Reject</button></div><div id=logp class="log mono" style="margin-top:10px"></div></div></aside></div>`}
+const slot='<div id=slf style="width:100%;height:100%"></div>';
+function cjoin(){const v=I(),cu=S.candUser;
+ const vbadge=cu&&cu.is_verified?`<div class=badge-verified style="margin:10px 0"><span>✓</span> Identity verified · ${esc(cu.name)}</div>`:'';
+ return`<main class=narrow><section class=card><div class="mu mono">YOU'RE INVITED</div><h1>${esc(v.name)}</h1><p class=mu>${v.type} interview. This session is recorded and your video is checked automatically to confirm it is you. Your interviewer can enlarge your video to look more closely. Other candidates never see you.</p>${vbadge}<label>Your name<input id=nm value="${cu?esc(cu.name):''}"></label><div class=vid style="margin-top:12px;max-height:240px">${slot}</div><p id=cs class=mu>Camera is off.</p><button data-a=cam>Turn on camera</button><label class=row style="margin-top:12px;color:var(--fg)"><input type=checkbox id=cn style="width:20px;min-height:20px">I agree to recording and automatic verification.</label><button class=pri data-a=enter style="margin-top:14px;width:100%">Enter waiting room</button><p id=err class=er></p></section></main>`}
+const cwait=()=>`<main class=narrow><section class=card style="text-align:center"><h1>Waiting to be admitted</h1><p class=mu>The interviewer will let you in shortly. Keep this tab open.</p><div class=vid style="max-height:240px">${slot}</div></section></main>`;
+const cdone=()=>`<main class=narrow><section class=card style="text-align:center"><h1>Thank you</h1><p class=mu>This session has ended. You can close this tab.</p><button data-a=cout>Back to start</button></section></main>`;
+function cverify(){const cu=S.candUser||{};
+ return`<main class=narrow><section class=card><div class="mu mono">IDENTITY VERIFICATION</div><h1>Verify your face</h1><p class=mu>We need to verify your identity once. Turn on your camera and look at it clearly. This takes just a few seconds.</p><div class="badge-verified" style="display:none" id=vbdg><span>✓</span> Verified!</div><div class=vid style="margin-top:14px;max-height:260px"><div id=slf style="width:100%;height:100%"></div><div id=chip class="chip st-wa">Camera off</div></div><p id=cs class=mu style="margin-top:8px">Camera is off.</p><div class=row style="margin-top:12px"><button data-a=cvcam>Turn on camera</button><button class=pri data-a=cvgo id=cvgo disabled>Verify my face</button></div><p id=err class=er style="margin-top:8px"></p><p class=mu style="margin-top:16px;font-size:13px">Already verified? <button data-a=cvskip style="min-height:unset;padding:0;background:none;border:none;color:#1D4ED8;cursor:pointer;font:inherit;font-size:13px">Skip to enter interview code</button></p></section></main>`}
+function croom(){const v=I(),cd=v.type=='Technical';
+ const w=cd?`<div class=row><label style="margin:0">Language <select id=lgs style="width:auto">${v.langs.map(l=>`<option ${l==lang?'selected':''}>${l}</option>`).join('')}</select></label><span style="flex:1"></span><button class=pri data-a=run>Run</button></div><p class=mu>Write function <b>firstUnique(s)</b>: the first non-repeating character, or null.</p><textarea id=ed spellcheck=false>${esc(D[lang]??T[lang])}</textarea><h2 style="margin-top:10px;font-size:16px">Output</h2><pre id=out class=mono style="min-height:70px;white-space:pre-wrap;margin:0">Press Run.</pre><p class=mu style="font-size:12px">Pasting is turned off in this editor.</p>`
+ :`<div class=row style="justify-content:space-between"><div class="mu mono">QUESTION ${qi+1} OF ${Q.length}</div></div><h2 style="font-size:22px">${esc(Q[qi])}</h2><textarea id=pad style="font-family:inherit" placeholder="Type your answer here...">${esc(D['q'+qi]||'')}</textarea><div class=row style="margin-top:8px"><button data-a=nq data-x=-1 ${qi?'':'disabled'}>Previous</button><button class=pri data-a=nq data-x=1>${qi<Q.length-1?'Next':'Finish'}</button></div>`;
+ return hdr(esc(v.name),'<button class=dng data-a=leave>Leave</button>')+`<div class=g2><section><div class=vid><img id=adm alt="Interviewer video"><div class=self>${slot}</div><div id=ov class=ov style="display:none"></div></div><div class=card style="margin-top:10px"><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div><p class=mu style="font-size:13px">Recorded with your consent. Your video is checked automatically.</p></section><section class=card>${w}</section></div>`}
+function render(){if(S.v!='alive')xclose();document.body.className=(S.v=='adash'||S.v=='alive')?'dk':'';const views={home,adash,alive,cjoin,cwait,croom,cdone,cverify};$('#app').innerHTML=(views[S.v]||home)();
+ const s=$('#slf');if(s)s.append(V);const r=$('#rem');if(r&&F[S.sel])r.src=F[S.sel].img;const a=$('#adm');if(a&&LAST.a)a.src=LAST.a;upd();if(S.v=='alive'&&CONFIG.API_BASE)fetch(CONFIG.API_BASE+'/health').then(r=>r.json()).then(h=>{const e=$('#eng');if(e)e.textContent='Engine: '+h.engine+' ('+h.mode+') '+(h.ai?'· ✨ Gemini AI Active':'')}).catch(()=>{})}
+const send=t=>{ch.postMessage({t:'w',code:S.code,cid:S.cid,txt:t});wsSend({type:'work',txt:t})};
+async function loadInterviews(){
+ if(!CONFIG.API_BASE||!api.tok())return;
+ try{
+  const ivs=await api.get('/interviews');
+  for(const iv of ivs){
+   if(!DB.ivs[iv.code])DB.ivs[iv.code]={name:iv.name,type:iv.type,level:iv.level,langs:iv.langs,c:{},chat:[]};
+   else{DB.ivs[iv.code].name=iv.name;DB.ivs[iv.code].type=iv.type;DB.ivs[iv.code].langs=iv.langs}
+  }
+  save();
+ }catch(e){}
+}
+async function act(a,x){if(xact(a,x))return;
+ if(a=='htab'){S.tab=x;render();return}
+ if(a=='smode'){S.staffMode=x;render();return}
+ if(a=='cmode'){S.candMode=x;render();return}
+ if(a=='login'){
+  const em=$('#em')?$('#em').value.trim():'hr@company.com', pw=$('#pw')?$('#pw').value:'demo';
+  if($('#err'))$('#err').textContent='';
+  if(CONFIG.API_BASE){
+   try{
+    const res=await api.post('/auth/login',{email:em,password:pw});
+    api.setTok(res.token);
+    S.user={email:em,role:res.title,company:res.company};
+    await loadInterviews();
+    S.v='adash';render();return;
+   }catch(err){if($('#err'))$('#err').textContent=err.message||'Wrong credentials';return}
+  }
+  if(pw=='demo'){S.v='adash';render()}else if($('#err'))$('#err').textContent='Wrong password. Use: demo';
+ }
+ else if(a=='staff-register'){
+  const co=$('#sco')&&$('#sco').value.trim(),em=$('#sem')&&$('#sem').value.trim(),pw=$('#spw')&&$('#spw').value,pw2=$('#spw2')&&$('#spw2').value;
+  if($('#err'))$('#err').textContent='';
+  if(!co||!em||!pw){if($('#err'))$('#err').textContent='All fields required.';return}
+  if(pw!==pw2){if($('#err'))$('#err').textContent='Passwords do not match.';return}
+  if(CONFIG.API_BASE){
+   try{
+    const res=await api.post('/auth/register-staff',{company:co,email:em,password:pw});
+    api.setTok(res.token);
+    S.user={email:em,role:res.title,company:res.company};
+    await loadInterviews();
+    S.v='adash';render();return;
+   }catch(err){if($('#err'))$('#err').textContent=err.message||'Registration failed';return}
+  }
+  S.v='adash';render();
+ }
+ else if(a=='cand-login'){
+  const em=$('#cem')&&$('#cem').value.trim(),pw=$('#cpw')&&$('#cpw').value;
+  if($('#err'))$('#err').textContent='';
+  if(!em||!pw){if($('#err'))$('#err').textContent='Email and password required.';return}
+  if(CONFIG.API_BASE){
+   try{
+    const res=await fetch(CONFIG.API_BASE+'/candidate-auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em,password:pw})});
+    if(!res.ok){const j=await res.json().catch(()=>({}));if($('#err'))$('#err').textContent=j.detail||'Wrong email or password';return}
+    const data=await res.json();
+    api.setCandTok(data.token);
+    S.candUser={email:data.email,name:data.name,is_verified:data.is_verified};
+    sessionStorage.setItem('fg_cand_user',JSON.stringify(S.candUser));
+    if(!data.is_verified){S.v='cverify';render();return}
+    S.candMode='code';render();return;
+   }catch(err){if($('#err'))$('#err').textContent='Login failed. Try again.';return}
+  }
+  S.candMode='code';render();
+ }
+ else if(a=='cand-register'){
+  const nm=$('#cnm')&&$('#cnm').value.trim(),em=$('#cem')&&$('#cem').value.trim(),pw=$('#cpw')&&$('#cpw').value,pw2=$('#cpw2')&&$('#cpw2').value;
+  if($('#err'))$('#err').textContent='';
+  if(!nm||!em||!pw){if($('#err'))$('#err').textContent='All fields required.';return}
+  if(pw!==pw2){if($('#err'))$('#err').textContent='Passwords do not match.';return}
+  if(pw.length<6){if($('#err'))$('#err').textContent='Password must be at least 6 characters.';return}
+  if(CONFIG.API_BASE){
+   try{
+    const res=await fetch(CONFIG.API_BASE+'/candidate-auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:nm,email:em,password:pw})});
+    if(!res.ok){const j=await res.json().catch(()=>({}));if($('#err'))$('#err').textContent=j.detail||'Registration failed';return}
+    const data=await res.json();
+    api.setCandTok(data.token);
+    S.candUser={email:data.email,name:data.name,is_verified:false};
+    sessionStorage.setItem('fg_cand_user',JSON.stringify(S.candUser));
+    S.v='cverify';render();return;
+   }catch(err){if($('#err'))$('#err').textContent='Registration failed. Try again.';return}
+  }
+  S.candMode='code';render();
+ }
+ else if(a=='join'){
+  const c=($('#cc')?$('#cc').value:'').trim().toUpperCase();
+  if(!c){$('#err').textContent='Please enter an interview code.';return}
+  if(DB.ivs[c]){$('#err').textContent='';S.code=c;S.v='cjoin';render();return}
+  if(CONFIG.API_BASE){
+   $('#err').textContent='Checking code with server...';
+   try{
+    const r=await fetch(CONFIG.API_BASE+'/interviews/'+encodeURIComponent(c));
+    if(r.ok){
+     const data=await r.json();
+     DB.ivs[c]={name:data.name||('Interview '+c),type:data.type||'Coding',level:'Standard',langs:data.langs||['JavaScript'],c:{},chat:[]};
+     save();$('#err').textContent='';S.code=c;S.v='cjoin';render();return;
+    }
+   }catch(e){}
+  }
+  $('#err').textContent='Code "'+c+'" not found. Ask your interviewer for the code.';
+ }
+ else if(a=='create'){
+  const nm=$('#nm').value||'Interview', ty=$('#ty').value, lv=$('#lv').value;
+  const l=[...document.querySelectorAll('.lgc:checked')].map(e=>e.value);
+  if(CONFIG.API_BASE&&api.tok()){
+   try{
+    const res=await api.post('/interviews',{name:nm,type:ty,level:lv,langs:l.length?l:['JavaScript']});
+    DB.ivs[res.code]={name:res.name,type:res.type,level:res.level,langs:res.langs,c:{},chat:[]};
+    save();await loadInterviews();render();return;
+   }catch(err){alert('Create failed: '+err.message)}
+  }
+  const c=Math.random().toString(36).slice(2,8).toUpperCase();
+  DB.ivs[c]={name:nm,type:ty,level:lv,langs:l.length?l:['JavaScript'],c:{},chat:[]};save();render();
+ }
+ else if(a=='open'){
+  S.code=x;S.sel=null;S.v='alive';render();
+  await connectWS(S.code);
+  if(CONFIG.API_BASE&&api.tok()){
+   try{
+    const cands=await api.get('/interviews/'+encodeURIComponent(S.code)+'/candidates');
+    for(const cd of cands){
+     if(!I().c[cd.id])I().c[cd.id]={name:cd.name,st:cd.status||'waiting',log:[],ch:null};
+     else I().c[cd.id].st=cd.status||I().c[cd.id].st;
+    }
+    save();updA();
+   }catch(e){}
+  }
+ }
+ else if(a=='back'){stopCam();S.v='adash';render()}
+ else if(a=='del'){
+  if(!confirm('Delete this interview? This cannot be undone.'))return;
+  delete DB.ivs[x];save();
+  if(CONFIG.API_BASE&&api.tok()){try{await fetch(CONFIG.API_BASE+'/interviews/'+encodeURIComponent(x),{method:'DELETE',headers:{'Authorization':'Bearer '+api.tok()}})}catch(e){}}
+  render();
+ }
+ else if(a=='out'){stopCam();api.setTok('');S={v:'home',tab:'staff',staffMode:'login',candMode:'login',candUser:null};sessionStorage.removeItem('fg_cand_user');render()}
+ else if(a=='cout'){stopCam();api.setCandTok('');S.v='home';S.tab='cand';S.candMode='login';S.candUser=null;sessionStorage.removeItem('fg_cand_user');render()}
+ else if(a=='cvcam'){const ok=await startCam();const cs=$('#cs');if(cs)cs.textContent=ok?'Camera is on. Look at the camera, then click Verify.':'Camera not available.';const bt=$('#cvgo');if(bt)bt.disabled=!ok;if(ok)startSend('c');const ch2=$('#chip');if(ch2)ch2.textContent=ok?'Live':'Camera off'}
+ else if(a=='cvgo'){
+  const btn=$('#cvgo');if(btn)btn.disabled=true;
+  if(CONFIG.API_BASE&&api.candTok()){
+   try{
+    const hd={'Content-Type':'application/json','Authorization':'Bearer '+api.candTok()};
+    const r=await fetch(CONFIG.API_BASE+'/candidate-auth/verify',{method:'POST',headers:hd,body:JSON.stringify({})});
+    if(r.ok){const d=await r.json();api.setCandTok(d.token);if(S.candUser){S.candUser.is_verified=true;sessionStorage.setItem('fg_cand_user',JSON.stringify(S.candUser))}}
+   }catch(e){}
+  }else{if(S.candUser)S.candUser.is_verified=true}
+  const bd=$('#vbdg');if(bd){bd.style.display='flex';bd.style.alignItems='center';bd.style.gap='8px'}
+  const cs=$('#cs');if(cs)cs.textContent='✓ Verified! Redirecting...';
+  setTimeout(()=>{stopCam();S.candMode='code';S.v='home';render()},1500);
+ }
+ else if(a=='cvskip'){stopCam();S.candMode='code';S.v='home';render()}
+ else if(a=='cam'){const ok=await startCam();$('#cs').textContent=ok?'Camera is on.':'Camera not available here. You can still join. Open the page in its own tab for camera access.'}
+ else if(a=='enter'){
+  const n=$('#nm').value.trim();
+  if(!n||!$('#cn').checked){$('#err').textContent='Enter your name and tick the consent box.';return}
+  if(CONFIG.API_BASE){
+   try{
+    // Use candidate auth token if available so backend links session to their account
+    const joinHdr={'Content-Type':'application/json'};
+    const ct=api.candTok();if(ct)joinHdr['Authorization']='Bearer '+ct;
+    const jr=await fetch(CONFIG.API_BASE+'/interviews/'+encodeURIComponent(S.code)+'/join',{method:'POST',headers:joinHdr,body:JSON.stringify({name:n})});
+    if(jr.ok){const res=await jr.json();S.cid=res.candidate_id;api.setTok(res.token)}
+    else{S.cid=Date.now().toString(36)}
+   }catch(e){S.cid=Date.now().toString(36)}
+  }else{S.cid=Date.now().toString(36)}
+  if(!I().c[S.cid])I().c[S.cid]={name:n,st:'waiting',log:[],ch:null};
+  lg(C(),'Joined waiting room'+(cam?'':' (no camera)'));
+  save();S.v='cwait';render();
+  await connectWS(S.code);
+  startSend('c');
+ }
+ else if(a=='adm'){
+  const c=I().c[x];c.st='live';lg(c,'Admitted');
+  if(!S.sel)S.sel=x;save();updA();
+  wsSend({type:'admit',to:x});
+  if(CONFIG.API_BASE&&api.tok()){try{await api.post('/candidates/'+x+'/status',{status:'admitted'})}catch(e){}}
+ }
+ else if(a=='no'){
+  const c=I().c[x];c.st='no';lg(c,'Not admitted');save();updA();
+  wsSend({type:'end',to:x});
+  if(CONFIG.API_BASE&&api.tok()){try{await api.post('/candidates/'+x+'/status',{status:'rejected'})}catch(e){}}
+ }
+ else if(a=='sel'){S.sel=x;const r=$('#rem');if(r)r.src=F[x]?F[x].img:'';updA()}
+ else if(a=='acam'){if(cam)stopCam();else if(await startCam())startSend('a')}
+ else if(a=='chal'){
+  const c=I().c[S.sel];if(!c)return;
+  const o=['Turn your head slowly to the left','Blink twice','Show three fingers to the camera','Read aloud: '+(1000+Math.random()*9000|0)];
+  const chText=o[Math.random()*o.length|0];
+  c.ch={t:chText};lg(c,'Challenge sent: '+chText);save();updA();
+  wsSend({type:'challenge',to:S.sel,text:chText});
+ }
+ else if(a=='cd'){const c=C();lg(c,'Challenge answered by candidate');c.ch=null;save();updR()}
+ else if(a=='flag'){const c=I().c[S.sel];if(!c)return;lg(c,'Moment flagged by interviewer');const f=F[S.sel];if(f){EV.unshift({t:clk(),img:f.img,l:f.res?f.res.live:0});EV.length=Math.min(EV.length,6)}save();updA()}
+ else if(a=='dec'){const c=I().c[S.sel];if(!c)return;c.dec=x;lg(c,'Decision: '+x);save();updA();if(CONFIG.API_BASE&&api.tok()){try{await api.post('/candidates/'+S.sel+'/status',{decision:x})}catch(e){}}}
+ else if(a=='say'){
+  const i=$('#ci');if(!i.value.trim())return;
+  const txt=i.value.trim();
+  I().chat.push({w:S.v=='alive'?'a':'c',n:C()?C().name:'',t:txt});
+  i.value='';save();chatH();
+  wsSend({type:'chat',text:txt,to:S.sel,name:C()?C().name:''});
+ }
+ else if(a=='leave'){const c=C();if(c){c.st='done';lg(c,'Left session');save()}stopCam();S.v='cdone';render()}
+ else if(a=='nq'){const n=qi+ +x;if(n>=Q.length){act('leave');return}qi=Math.max(0,n);render()}
+
+ else if(a=='run'){const src=$('#ed').value,o=$('#out');
+  if(lang!='JavaScript')o.textContent='[Runner not connected] '+lang+' will run on your backend sandbox (for example Judge0 or Piston).';
+  else try{const f=new Function(src+'\nreturn typeof firstUnique=="function"?firstUnique:null')();if(!f)o.textContent='Define function firstUnique(s).';
+   else o.textContent=[['aabbc','c'],['loveleetcode','v'],['aabb',null]].map(([s,e],i)=>'Test '+(i+1)+': '+((f(s)??null)===e?'Passed':'Failed (got '+f(s)+')')).join('\n')}catch(e){o.textContent='Error: '+e.message}
+  const c=C();lg(c,'Ran code ('+lang+')');save();send(lang+'\n'+src+'\n--- Output ---\n'+o.textContent)}
+ else if(a=='aiq'){
+  const v=I();if(!v)return;
+  const btn=document.querySelector('[data-a=aiq]');if(btn){btn.disabled=true;btn.textContent='⏳ Generating...'}
+  try{
+   const res=await fetch(CONFIG.API_BASE+'/ai/questions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:v.name.split('·')[0].trim()||'Software Engineer',type:v.type,level:v.level||'Standard'})});
+   const data=await res.json();
+   const qs=data.questions||[];
+   if(qs.length){
+    const msg=qs.map((q,i)=>`Q${i+1}: ${q}`).join('\n\n');
+    alert('✨ Gemini AI Questions:\n\n'+msg);
+   }else alert('No questions returned. Is GEMINI_API_KEY set?');
+  }catch(e){alert('AI questions failed: '+e.message)}
+  finally{if(btn){btn.disabled=false;btn.textContent='✨ Gemini AI Q\u2019s'}}
+ }
+}
+// ---- Expanded candidate view (interviewer only). Asks the candidate's browser for higher-quality frames while open.
+const xsrc=()=>{const f=X&&F[X.cid];return X&&X.freeze&&X.fr?X.fr:f?(f.hq||f.img):''};
+const xmsg=t=>{const m=$('#xm');if(m){m.textContent=t;setTimeout(()=>{m.textContent=''},3000)}};
+function xopen(cid){if(!cid)return;X={cid,z:1,px:0,py:0,b:1,c:1,flip:false,freeze:false,fr:'',cmp:false,ov:true};S.sel=cid;ch.postMessage({t:'hq',code:S.code,cid,on:true});lg(I().c[cid],'Interviewer opened expanded view');save();xdraw()}
+function xclose(){if(!X)return;ch.postMessage({t:'hq',code:S.code,cid:X.cid,on:false});X=null;const e=$('#xv');if(e)e.remove();try{if(document.fullscreenElement)document.exitFullscreen()}catch(e2){}}
+function xdraw(){let e=$('#xv');if(!e){e=document.createElement('div');e.id='xv';e.setAttribute('role','dialog');e.setAttribute('aria-modal','true');e.setAttribute('aria-label','Expanded candidate video');document.body.append(e)}
+ e.innerHTML=`<div class=xt><b>${esc(I().c[X.cid].name)}</b><span id=xch class=chip style="position:static"></span><span style="flex:1"></span><button data-a=xp2 data-x=-1 aria-label="Previous candidate">Prev</button><button data-a=xp2 data-x=1 aria-label="Next candidate">Next</button><button data-a=xk data-x=cmp>Compare</button><button data-a=xk data-x=ov>Overlays</button><button data-a=xk data-x=flip>Mirror</button><button data-a=xk data-x=freeze>${X.freeze?'Resume':'Freeze'}</button><button data-a=xsave>Save evidence</button><button data-a=chal>Send challenge</button><button data-a=xfs>Full screen</button><button class=pri data-a=xc id=xcl>Close</button></div><div class=xb><div id=xs class=xs><img id=xi alt="Candidate video, enlarged"><div id=xo class=xo></div></div><aside id=xr class=xr></aside></div><div class=xf><label>Brightness <input id=xbr type=range min=.5 max=2.5 step=.1 value=${X.b}></label><label>Contrast <input id=xcr type=range min=.5 max=2.5 step=.1 value=${X.c}></label><span>Wheel zoom · drag pan · double-click reset · F full screen · Space freeze · S save · C challenge · arrows switch · Esc close</span><span id=xm class=mono></span></div>`;
+ xupd();const b=$('#xcl');if(b)b.focus()}
+function xupd(){if(!X)return;const f=F[X.cid],r=f&&f.res,[t,k]=vd(r),i=$('#xi');if(!i)return;const s=xsrc();if(s&&i.getAttribute('src')!==s)i.src=s;
+ i.style.transform=`translate(${X.px}px,${X.py}px) scale(${X.z*(X.flip?-1:1)},${X.z})`;i.style.filter=`brightness(${X.b}) contrast(${X.c})`;
+ const h=$('#xch');if(h){h.textContent=t;h.className='chip '+k;h.style.position='static'}
+ const o=$('#xo');if(o)o.innerHTML=X.ov&&r?`<div class=bar><i class="${k}" style="width:${r.live}%"></i></div><div class=mono>Liveness signal ${r.live}% · Light ${r.b}/255 · Motion ${r.m} · ${X.freeze?'FROZEN':'LIVE'} · zoom ${X.z.toFixed(1)}x</div>`:'';
+ const q=$('#xr');if(q){q.style.display=X.cmp?'block':'none';q.innerHTML=X.cmp?`<h2>Reference</h2><img src="${REF[X.cid]||''}" alt="Reference frame"><p class=mu style="font-size:12px">Demo reference: the first frame of this session. With your backend this is the reference photo from check-in.</p><h2>Now</h2><img src="${s}" alt="Current frame">`:''}}
+function xact(a,x){
+ if(a=='xp'){xopen(S.sel);return 1}
+ if(!X)return 0;
+ if(a=='chal'){xmsg('Challenge sent');return 0}
+ if(a=='xc'){xclose();return 1}
+ if(a=='xp2'){const ids=Object.keys(I().c).filter(k=>I().c[k].st!='no'),n=ids[(ids.indexOf(X.cid)+ +x+ids.length)%ids.length];if(n&&n!=X.cid){ch.postMessage({t:'hq',code:S.code,cid:X.cid,on:false});X.cid=n;S.sel=n;X.freeze=false;X.fr='';ch.postMessage({t:'hq',code:S.code,cid:n,on:true});lg(I().c[n],'Interviewer opened expanded view');save();xdraw();updA()}return 1}
+ if(a=='xk'){if(x=='freeze'){const f=F[X.cid],cur=f?(f.hq||f.img):'';X.freeze=!X.freeze;X.fr=X.freeze?cur:''}else X[x]=!X[x];xdraw();return 1}
+ if(a=='xsave'){const s=xsrc(),f=F[X.cid];if(s){EV.unshift({t:clk(),img:s,l:f&&f.res?f.res.live:0});EV.length=Math.min(EV.length,6);lg(I().c[X.cid],'Evidence saved from expanded view');save();updE();xmsg('Evidence saved')}return 1}
+ if(a=='xfs'){try{const e=$('#xv');Promise.resolve(document.fullscreenElement?document.exitFullscreen():e.requestFullscreen()).catch(()=>xmsg('Full screen is blocked in this window. Open the page in its own tab.'))}catch(err){xmsg('Full screen is not supported on this device. The expanded view already fills the screen.')}return 1}
+ return 0}
+let dg=null;
+document.addEventListener('wheel',e=>{if(X&&e.target.closest('#xs')){e.preventDefault();X.z=Math.min(6,Math.max(1,X.z*(e.deltaY<0?1.15:.87)));if(X.z==1)X.px=X.py=0;xupd()}},{passive:false});
+document.addEventListener('pointerdown',e=>{if(X&&e.target.closest('#xs'))dg={x:e.clientX,y:e.clientY}});
+document.addEventListener('pointermove',e=>{if(dg&&X&&X.z>1){X.px+=e.clientX-dg.x;X.py+=e.clientY-dg.y;dg={x:e.clientX,y:e.clientY};xupd()}});
+document.addEventListener('pointerup',()=>{dg=null});
+document.addEventListener('dblclick',e=>{if(X&&e.target.closest('#xs')){X.z=1;X.px=X.py=0;xupd()}});
+document.addEventListener('input',e=>{if(!X)return;if(e.target.id=='xbr'){X.b=+e.target.value;xupd()}else if(e.target.id=='xcr'){X.c=+e.target.value;xupd()}});
+document.addEventListener('keydown',e=>{if(!X)return;const t=e.target;if(/INPUT|TEXTAREA|SELECT/.test(t.tagName)&&t.type!='range')return;const k=e.key;
+ if(k=='Escape'&&!document.fullscreenElement)xact('xc');else if(k=='f'||k=='F')xact('xfs');else if(k==' '){e.preventDefault();xact('xk','freeze')}
+ else if(k=='s'||k=='S')xact('xsave');else if(k=='c'||k=='C')act('chal');else if(k=='ArrowRight')xact('xp2','1');else if(k=='ArrowLeft')xact('xp2','-1');else if(k=='0'){X.z=1;X.px=X.py=0;xupd()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset.a,b.dataset.x)});
+document.addEventListener('input',e=>{const t=e.target;if(t.id=='ed'){D[lang]=t.value;send(lang+'\n'+t.value)}else if(t.id=='pad'){D['q'+qi]=t.value;send('Q'+(qi+1)+': '+t.value)}});
+document.addEventListener('change',e=>{if(e.target.id=='lgs'){D[lang]=$('#ed').value;lang=e.target.value;const c=C();lg(c,'Language changed to '+lang);save();render()}});
+document.addEventListener('paste',e=>{if(e.target.id=='ed'){e.preventDefault();const c=C();if(c){lg(c,'Paste attempt blocked');save()}}});
+render();
+</script></body></html>

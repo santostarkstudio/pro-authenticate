@@ -1,0 +1,17 @@
+.env
+*.db
+backend/data/
+backend/models/*
+!backend/models/model.json.example
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+.venv/
+venv/
+backend/model_project/*
+!backend/model_project/README.md
+certs/
+backup_working_state/
+*.zip
+.firebase/
+.vercel/

@@ -1,0 +1,8 @@
+{
+  "yolo_path": "models/yolo_face.pt",
+  "cls_path": "models/liveness.keras",
+  "input_size": [224, 224],
+  "real_index": 1,
+  "preprocess": "div255",
+  "yolo_conf": 0.4
+}

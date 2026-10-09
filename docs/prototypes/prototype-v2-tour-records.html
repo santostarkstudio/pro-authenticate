@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>FaceGuard — Interview Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F9FD;--fg:#0B1020;--mu:#3B4660;--cd:#fff;--bd:#DDE4F2;--in:#EEF2FA;--ok:#15803D;--wa:#B45309;--er:#B91C1C;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0E1220;--fg:#F2F5FB;--mu:#B7C2DA;--cd:#161C30;--bd:#2A3350;--in:#0B0F1C;--ok:#4ADE80;--wa:#FBBF24;--er:#F87171}}
+:root[data-theme=dark],.dk{--bg:#080A12;--fg:#F2F5FB;--mu:#B7C2DA;--cd:#0F1424;--bd:#2A3350;--in:#0A0E1C;--ok:#4ADE80;--wa:#FBBF24;--er:#F87171}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 Inter,system-ui,sans-serif}
+h1,h2,.lg{font-family:'Space Grotesk',sans-serif;margin:0}h1{font-size:34px}h2{font-size:18px;margin-bottom:8px}.lg{font-size:19px}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:16px;padding:18px;box-sizing:border-box}
+button{font:inherit;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--fg);cursor:pointer}
+button:disabled{opacity:.5;cursor:default}.pri{background:#1D4ED8;color:#fff;border-color:#1D4ED8}.dng{border-color:var(--er);color:var(--er)}
+input,select,textarea{font:inherit;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid var(--bd);background:var(--in);color:var(--fg);width:100%;box-sizing:border-box}
+textarea{padding:12px;min-height:220px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.6}
+label{display:block;font-size:14px;color:var(--mu);margin-top:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mu{color:var(--mu)}.mono{font-family:'JetBrains Mono',monospace;font-size:13px}.er{color:var(--er)}
+.hd{padding:10px 18px;border-bottom:1px solid var(--bd);gap:14px}
+.grid{display:grid;grid-template-columns:250px 1fr 340px;gap:14px;padding:14px}.g2{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:14px;padding:14px}
+@media(max-width:1000px){.grid,.g2{grid-template-columns:1fr}}
+.vid{position:relative;aspect-ratio:4/3;max-height:430px;background:#0D1120;border-radius:14px;overflow:hidden;width:100%}
+.vid img,.vid video{width:100%;height:100%;object-fit:cover;display:block}
+.chip{position:absolute;left:10px;top:10px;padding:6px 12px;border-radius:8px;font-weight:500;font-size:14px;color:#fff}
+.st-ok{background:#15803D}.st-wa{background:#B45309}.st-er{background:#B91C1C}
+.bar{height:8px;border-radius:4px;background:var(--bd)}.bar i{display:block;height:8px;border-radius:4px}
+.log,.chat{max-height:150px;overflow:auto;font-size:13px}.chat{font-size:14px}
+.ov{position:absolute;inset:0;background:rgba(11,16,32,.72);align-items:center;justify-content:center;padding:14px}.ov>div{background:#fff;color:#0B1020;padding:20px;border-radius:16px;text-align:center}
+.self{position:absolute;right:8px;bottom:8px;width:34%;aspect-ratio:4/3;border:2px solid #fff;border-radius:10px;overflow:hidden;background:#CBD6EE}
+.gate{display:grid;grid-template-columns:1.2fr 1fr;gap:0;min-height:90vh}@media(max-width:800px){.gate{grid-template-columns:1fr}}
+.hero{background:#0B1020;color:#F2F5FB;padding:56px 44px;display:flex;flex-direction:column;justify-content:center;gap:16px}.hero p{color:#B7C2DA;font-size:18px;margin:0;max-width:440px}
+.narrow{max-width:520px;margin:0 auto;padding:24px 16px}
+</style></head><body><div id="app"></div>
+<script>
+const CONFIG={API_BASE:'',SHOW_STAFF_LINK:true}; // later: your FastAPI URL, e.g. 'https://your-server/api'. Never put secret keys in this file.
+const Q=['Tell us about a project you are proud of.','A store\'s sales fell 10% last quarter. How would you find the cause?','Describe a time you handled a disagreement in a team.'];
+const T={JavaScript:'function firstUnique(s){\n  const c={};\n  for(const x of s)c[x]=(c[x]||0)+1;\n  for(const x of s)if(c[x]===1)return x;\n  return null;\n}',Python:'def first_unique(s):\n    pass',Java:'class Solution {\n}','C++':'// write your solution',SQL:'-- write your query'};
+const ls={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const ld=()=>{let d;try{d=JSON.parse(ls.g('fg')||'null')}catch(e){}d=d||{ivs:{}};d.ivs=d.ivs||{};d.users=d.users||[{e:'hr@company.com',r:'Owner',h:'2a97516c354b68848cdbd8f54a226a0a55b21ed138e207ad6c5cbb9c00aa5aea'}];d.rec=d.rec||{};d.aud=d.aud||[];return d};
+let DB=ld(),S={v:'home'},cam=null,PV=null,D={},qi=0,F={},EV=[],LAST={},WK={},lang='JavaScript',tm=null,lastEv=0,H={},ST={cam:0,mic:0,demo:0,static:0},dt,mt,ch;
+try{ch=new BroadcastChannel('fg')}catch(e){ch={postMessage(){}}}
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const V=document.createElement('video');V.muted=true;V.playsInline=true;
+const I=()=>DB.ivs[S.code],C=()=>I()&&I().c[S.cid];
+const clk=()=>new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}),lg=(c,m)=>c.log.push([clk(),m]);
+const save=()=>{ls.s('fg',JSON.stringify(DB));ch.postMessage({t:'db'})};
+ch.onmessage=e=>{const m=e.data;if(m.t=='db'){DB=ld();upd(1)}else if(m.code==S.code)onMsg(m)};
+let AC,AN,ML=0;
+function stopMedia(){cam&&cam.getTracks().forEach(t=>t.stop());cam=null;clearInterval(dt);clearInterval(mt);try{AC&&AC.close()}catch(e){}AC=null;ST.cam=ST.mic=ST.demo=0;document.querySelectorAll('.mic i').forEach(i=>i.style.width='0')}
+function stopCam(){stopMedia();clearInterval(tm)}
+async function startCam(){stopMedia();let s0=null,err='';const A={echoCancellation:true,noiseSuppression:true},Vd={width:640,height:480};
+ try{s0=await navigator.mediaDevices.getUserMedia({video:Vd,audio:A})}catch(e){err=e.name;try{s0=await navigator.mediaDevices.getUserMedia({video:Vd})}catch(e2){err=e2.name}}
+ if(!s0)return{ok:0,err};cam=s0;V.srcObject=s0;try{await V.play()}catch(e){}ST.cam=1;ST.mic=s0.getAudioTracks().length;if(ST.mic)meter(s0);return{ok:1,mic:ST.mic}}
+function meter(s0){try{AC=new(window.AudioContext||window.webkitAudioContext)();AC.resume();AN=AC.createAnalyser();AC.createMediaStreamSource(s0).connect(AN);const b=new Uint8Array(AN.fftSize);
+ mt=setInterval(()=>{AN.getByteTimeDomainData(b);let m=0;for(const v of b)m=Math.max(m,Math.abs(v-128));ML=Math.min(100,m*2);document.querySelectorAll('.mic i').forEach(i=>i.style.width=ML+'%')},120)}catch(e){}}
+function demoCam(){stopMedia();const cv=document.createElement('canvas');cv.width=320;cv.height=240;const x=cv.getContext('2d');let t=0;
+ const dr=()=>{t+=.08;const dx=ST.static?0:Math.sin(t)*14,dy=ST.static?0:Math.cos(t*1.3)*6;x.fillStyle='#1B2340';x.fillRect(0,0,320,240);x.fillStyle='#CBD5E8';x.beginPath();x.ellipse(160+dx,120+dy,52,68,0,0,7);x.fill();x.fillStyle='#1B2340';x.fillRect(138+dx,108+dy,10,6);x.fillRect(172+dx,108+dy,10,6);x.fillRect(148+dx,146+dy,24,4);x.fillStyle='#fff';x.font='13px sans-serif';x.fillText(ST.static?'DEMO: still photo':'DEMO camera',10,20)};
+ dr();dt=setInterval(dr,66);cam=cv.captureStream(15);V.srcObject=cam;V.play().catch(()=>{});ST.cam=1;ST.demo=1}
+const toast=m=>{let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';e.style.cssText='position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#0B1020;color:#fff;padding:12px 18px;border-radius:12px;z-index:10;max-width:90%';document.body.append(e)}e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',5000)};
+const aud=m=>{DB.aud.push([Date.now(),S.user||'candidate',m])};
+const sha=async x=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+function camMsg(r){const t=r.ok?(r.demo?'Demo camera is on (no real camera or microphone).':'Camera is on. '+(r.mic?'Microphone is on. Speak to see the level bar.':'No microphone found or allowed.')):({NotAllowedError:'Permission was blocked. Allow camera and microphone in the browser address bar. In a preview window, open the page in its own tab.',NotFoundError:'No camera was found on this device.',NotReadableError:'Another app is using the camera. Close it and try again.'}[r.err]||'Camera could not start ('+r.err+').')+' You can use the demo camera to test everything.';const e=$('#cs');if(e)e.textContent=t;else toast(t)}
+function saveRec(code,cid){const v=DB.ivs[code],c=v.c[cid],h=H[cid]||[];c.rec=1;DB.rec[code+'_'+cid]={code,iv:v.name,type:v.type,level:v.level,cand:c.name,start:c.t0||Date.now(),end:Date.now(),dec:c.dec||'None',avg:h.length?Math.round(h.reduce((a,b)=>a+b,0)/h.length):null,min:h.length?Math.min(...h):null,work:WK[cid]||'',ev:EV.slice(0,3),log:c.log};aud('Session stored: '+c.name);save()}
+function sweep(){for(const[code,v]of Object.entries(DB.ivs))for(const[cid,c]of Object.entries(v.c))if(c.st=='done'&&!c.rec)saveRec(code,cid)}
+const TOUR=[['Welcome','This is a live interview with video, chat and a work area. Setup takes a few minutes.'],['Camera and microphone','Allow both when your browser asks. Sit facing a light with your face in the middle of the frame. A level bar moves when your microphone works.'],['Consent','The session is recorded and your video is checked automatically to confirm it is you. You must agree before you join.'],['Waiting room','After you enter, wait until the interviewer admits you. Keep this tab open.'],['During the interview','Use chat to message the interviewer. Coding interviews have an editor and a Run button. Other interviews have questions with an answer pad.'],['Quick checks','The interviewer may ask you to turn your head, blink or read a code aloud. Press Done after you do it.']];
+function tour(i){let e=$('#tour');if(i<0||i>=TOUR.length){if(e)e.remove();ls.s('fg_tour','1');return}if(!e){e=document.createElement('div');e.id='tour';document.body.append(e)}e.style.cssText='position:fixed;inset:0;background:rgba(11,16,32,.65);display:flex;align-items:center;justify-content:center;padding:16px;z-index:9';
+ e.innerHTML=`<div class=card style="max-width:440px"><div class="mu mono">STEP ${i+1} OF ${TOUR.length}</div><h2>${TOUR[i][0]}</h2><p>${TOUR[i][1]}</p><div class=row style="justify-content:space-between"><button data-a=tskip>Skip tour</button><span class=row><button data-a=tgo data-x=${i-1} ${i?'':'disabled'}>Back</button><button class=pri data-a=tgo data-x=${i+1}>${i<TOUR.length-1?'Next':'Finish'}</button></span></div></div>`}
+// Verification engine. DEMO: motion + light check only. Replace with your Python model via CONFIG.API_BASE.
+async function analyze(cv,x){
+ if(CONFIG.API_BASE){try{const r=await fetch(CONFIG.API_BASE+'/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:cv.toDataURL('image/jpeg',.6)})});return await r.json()}catch(e){}}
+ const d=x.getImageData(0,0,160,120).data,n=d.length/16,cur=new Float32Array(n),p=PV;let b=0,m=0;
+ for(let i=0;i<n;i++){const j=i*16,g=(d[j]+d[j+1]+d[j+2])/3;cur[i]=g;b+=g;if(p)m+=Math.abs(g-p[i])}
+ PV=cur;b/=n;m=p?m/n:2;let face=null;try{if(window.FaceDetector)face=(await new FaceDetector().detect(cv)).length}catch(e){}
+ let live=b<35?15:m<.5?35:Math.min(95,55+m*10);if(face===0)live=Math.min(live,30);
+ return{live:Math.round(live),b:Math.round(b),face,m:+m.toFixed(1)}}
+function startSend(k){clearInterval(tm);const cv=document.createElement('canvas');cv.width=160;cv.height=120;const x=cv.getContext('2d',{willReadFrequently:true});
+ tm=setInterval(async()=>{if(!cam||V.readyState<2)return;x.drawImage(V,0,0,160,120);const img=cv.toDataURL('image/jpeg',.5);
+ if(k=='c')ch.postMessage({t:'f',code:S.code,cid:S.cid,img,res:await analyze(cv,x)});else ch.postMessage({t:'a',code:S.code,img})},500)}
+const vd=r=>!r?['No video yet','st-wa']:r.live>=70?['Verified · live signal '+r.live+'%','st-ok']:r.live>=40?['Borderline · '+r.live+'%','st-wa']:['Review needed · '+r.live+'%','st-er'];
+function onMsg(m){
+ if(m.t=='f'&&S.v=='alive'){F[m.cid]={img:m.img,res:m.res};(H[m.cid]=H[m.cid]||[]).push(m.res.live);if(!S.sel)S.sel=m.cid;
+  if(m.cid==S.sel){const r=$('#rem');if(r)r.src=m.img;updV();if(m.res.live<70&&Date.now()-lastEv>6000){lastEv=Date.now();EV.unshift({t:clk(),img:m.img,l:m.res.live});EV.length=Math.min(EV.length,6);updE()}}}
+ else if(m.t=='a'&&S.v=='croom'){LAST.a=m.img;const r=$('#adm');if(r)r.src=m.img}
+ else if(m.t=='w'&&S.v=='alive'){WK[m.cid]=m.txt;updW()}}
+function updV(){const f=F[S.sel],r=f&&f.res,[t,c]=vd(r),k=$('#chip');if(k){k.textContent=t;k.className='chip '+c}
+ const v=$('#verd');if(v)v.innerHTML=r?`<div class=bar><i class="${c}" style="width:${r.live}%"></i></div><p class=mono>Liveness signal ${r.live}% · Light ${r.b}/255 · Motion ${r.m} · Faces ${r.face==null?'n/a':r.face}</p><p class=mono>Identity match: needs your model</p>`:'<p class=mu>Waiting for video.</p>'}
+const updE=()=>{const e=$('#evid');if(e)e.innerHTML=EV.map(x=>`<div><img src="${x.img}" width=80 height=60 alt="Evidence frame"><div class=mono style="font-size:11px">${x.t} · ${x.l}%</div></div>`).join('')||'<p class=mu>None yet.</p>'};
+const updW=()=>{const e=$('#wk');if(e)e.textContent=WK[S.sel]||'(nothing yet)'};
+function chatH(){const e=$('#chat');if(e){e.innerHTML=(I().chat||[]).map(m=>`<div><b>${m.w=='a'?'Interviewer':esc(m.n)}:</b> ${esc(m.t)}</div>`).join('');e.scrollTop=1e9}}
+function updA(){const v=I();if(!v||!$('#lobby'))return;sweep();
+ $('#lobby').innerHTML=Object.entries(v.c).map(([k,c])=>`<div class=row style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)"><span><b>${esc(c.name)}</b><br><span class="mu mono">${c.st}${c.dec?' · '+c.dec:''}</span></span><span class=row>${c.st=='waiting'?`<button class=pri data-a=adm data-x=${k}>Admit</button><button data-a=no data-x=${k}>No</button>`:`<button data-a=sel data-x=${k}>${S.sel==k?'Viewing':'View'}</button>`}</span></div>`).join('')||'<p class=mu>Nobody yet.</p>';
+ updV();updE();updW();chatH();const c=v.c[S.sel];$('#logp').innerHTML=c?c.log.slice().reverse().map(l=>l[0]+' '+esc(l[1])).join('<br>'):''}
+function updR(){const c=C();if(!c)return;const o=$('#ov');if(o){o.innerHTML=c.ch?`<div><b>Quick check</b><h2>${esc(c.ch.t)}</h2><button class=pri data-a=cd>Done</button></div>`:'';o.style.display=c.ch?'flex':'none'}chatH()}
+function upd(m){if(S.v=='alive')updA();else if(S.v=='cwait'){const c=C();if(c&&c.st=='live'){S.v='croom';render()}else if(c&&c.st=='no'){S.v='cdone';render()}}
+ else if(S.v=='croom'){const c=C();if(c&&c.st=='done'){stopCam();S.v='cdone';render()}else updR()}else if(m&&S.v=='adash'&&!document.activeElement.matches('input,select')){sweep();render()}}
+const hdr=(t,b)=>`<header class="row hd"><span class=lg>FaceGuard</span><span class=mu>${t}</span><span style="flex:1"></span>${S.v=='croom'?'<button data-a=tgo data-x=0>Take tour</button>':''}${b||'<button data-a=out>Sign out</button>'}</header>`;
+function alogin(){return`<main class=narrow style="padding-top:60px"><section class=card><span class=lg>FaceGuard</span><h1 style="font-size:28px;margin:6px 0">Staff sign in</h1><p class=mu>Interviewers, reviewers and administrators.</p><label>Email<input id=em value="hr@company.com"></label><label>Password<input id=pw type=password placeholder="demo"></label><button class=pri data-a=login style="margin-top:14px;width:100%">Sign in</button><p class="mu mono">Demo account: hr@company.com / demo</p><p id=err class=er></p></section></main>`}
+function center(){const l=CONFIG.SHOW_STAFF_LINK?'<p style="text-align:center"><a href="#/admin" data-a=staff style="color:var(--mu);font-size:13px">Staff</a></p>':'';return`<main class=narrow style="padding-top:60px"><section class=card><span class=lg>FaceGuard</span><h1 style="font-size:28px;margin:6px 0">Join your interview</h1><p class=mu>Enter the code from your invitation.</p><label>Interview code<input id=cc value="${S.pre||''}" placeholder="e.g. AB12CD"></label><button class=pri data-a=join style="margin-top:12px;width:100%">Continue</button><p id=err class=er></p></section>${l}</main>`}
+const TABS=['Interviews','Records','Accounts','Audit','Storage'];
+function adash(){const t=S.tab||'Interviews',base=location.href.split('#')[0];let b='';
+ const nav=`<div class=row style="padding:10px 18px;border-bottom:1px solid var(--bd)">${TABS.map(x=>`<button class="${x==t?'pri':''}" data-a=tab data-x=${x}>${x}</button>`).join('')}</div>`;
+ if(t=='Interviews'){const L=Object.entries(DB.ivs).reverse().map(([k,v])=>`<div class=card style="margin-top:10px"><div class=row style="justify-content:space-between"><div><b>${esc(v.name)}</b><div class="mu mono">Code ${k} · ${v.type} · ${v.level} · ${Object.keys(v.c).length} candidate(s)</div></div><button class=pri data-a=open data-x=${k}>Open console</button></div><label>Candidate link</label><input readonly value="${base}#/join/${k}"></div>`).join('')||'<p class=mu>No interviews yet.</p>';
+  b=`<div class=row style="align-items:flex-start;padding:18px;gap:18px"><section class=card style="flex:1 1 300px;max-width:380px"><h2>Create interview</h2><label>Name<input id=nm value="Software Intern · Round 1"></label><label>Type<select id=ty><option>Coding</option><option>Non-coding</option></select></label><label>Security level<select id=lv><option>Basic</option><option selected>Standard</option><option>Strict</option></select></label><label>Allowed languages (coding)</label><div class=row>${Object.keys(T).map(k=>`<label style="margin:0"><input type=checkbox class=lgc value="${k}" checked style="width:18px;min-height:18px"> ${k}</label>`).join('')}</div><button class=pri data-a=create style="margin-top:14px;width:100%">Create and get code</button></section><section style="flex:2 1 400px"><h2>Interviews</h2><label>Staff link (keep private)</label><input readonly value="${base}#/admin">${L}</section></div>`}
+ else if(t=='Records'){b=`<div style="padding:18px;display:grid;gap:12px">${Object.entries(DB.rec).reverse().map(([k,r])=>`<div class="card row" style="justify-content:space-between"><div><b>${esc(r.cand)}</b> · ${esc(r.iv)}<div class="mu mono">${new Date(r.end).toLocaleString()} · decision ${esc(r.dec)} · liveness avg ${r.avg??'n/a'} min ${r.min??'n/a'} · ${r.log.length} events</div></div><span class=row><button data-a=ropen data-x=${k}>${S.rk==k?'Hide':'Details'}</button><button class=dng data-a=rdel data-x=${k}>Delete</button></span></div>${S.rk==k?`<div class=card><h2>Events</h2><div class="log mono" style="max-height:200px">${r.log.map(l=>l[0]+' '+esc(l[1])).join('<br>')}</div><h2 style="margin-top:10px">Work</h2><pre class=mono style="white-space:pre-wrap;max-height:160px;overflow:auto">${esc(r.work||'(none)')}</pre><div class=row>${r.ev.map(e=>`<img src="${e.img}" width=80 height=60 alt="Evidence frame">`).join('')}</div><label>Record as JSON (copy)</label><textarea readonly style="min-height:100px">${esc(JSON.stringify({...r,ev:r.ev.length+' frames'}))}</textarea></div>`:''}`).join('')||'<p class=mu>No stored sessions yet. A record is saved when a session ends.</p>'}</div>`}
+ else if(t=='Accounts'){b=`<div class=row style="align-items:flex-start;padding:18px;gap:18px"><section class=card style="flex:1 1 300px;max-width:360px"><h2>Add staff account</h2><label>Email<input id=ue></label><label>Password<input id=up type=password></label><label>Role<select id=ur><option>Interviewer</option><option>Reviewer</option><option>Owner</option></select></label><button class=pri data-a=uadd style="margin-top:12px;width:100%">Add</button><p id=err class=er></p></section><section style="flex:2 1 400px"><h2>Accounts</h2>${DB.users.map(u=>`<div class="card row" style="justify-content:space-between;margin-top:8px"><span><b>${esc(u.e)}</b> <span class=mu>· ${u.r}</span></span>${u.e==S.user?'<span class=mu>You</span>':`<button class=dng data-a=udel data-x="${esc(u.e)}">Remove</button>`}</div>`).join('')}<p class=mu style="font-size:13px">Passwords are stored as SHA-256 hashes in this browser (demo). Real accounts need your backend.</p></section></div>`}
+ else if(t=='Audit')b=`<div style="padding:18px"><h2>Audit log</h2><div class="card mono" style="max-height:480px;overflow:auto;font-size:13px">${DB.aud.slice().reverse().slice(0,80).map(a=>new Date(a[0]).toLocaleTimeString()+' · '+esc(a[1])+' · '+esc(a[2])).join('<br>')||'No events.'}</div></div>`;
+ else b=`<div style="padding:18px;max-width:640px"><h2>Storage</h2><div class=card><p>Data lives in this browser (demo mode). Used: <b>${(JSON.stringify(DB).length/1024).toFixed(1)} KB</b>. Interviews ${Object.keys(DB.ivs).length} · stored sessions ${Object.keys(DB.rec).length} · staff accounts ${DB.users.length}.</p><p class=mu>Cloud storage: ${CONFIG.API_BASE?'connected to '+esc(CONFIG.API_BASE):'not connected. Set CONFIG.API_BASE after your backend (database and file storage) is ready.'}</p><div class=row><button class=pri data-a=sync>Sync to cloud</button><button class=dng data-a=wipe>${S.w?'Click again to erase all demo data':'Erase demo data'}</button></div></div></div>`;
+ return hdr('Signed in as '+esc(S.user))+nav+b}
+function alive(){const v=I();return hdr(esc(v.name)+' · code '+S.code,'<button data-a=back>Dashboard</button>')+`<div class=grid><aside class=card><h2>Lobby</h2><div id=lobby></div><p class=mu style="font-size:13px">Candidates join with code <b class=mono>${S.code}</b> in another tab.</p></aside><section><div class=vid><img id=rem alt="Candidate video"><div id=chip class="chip st-wa">No video yet</div></div><div class=row style="margin:10px 0"><button data-a=acam>My camera on/off</button><button class=pri data-a=chal>Send random challenge</button><button data-a=flag>Flag moment</button><button class=dng data-a=endc>End session</button></div><div class=card><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div></section><aside style="display:grid;gap:14px;align-content:start"><div class=card><h2>Verification</h2><div id=verd></div><p class=mu style="font-size:12px">Demo engine: motion and light check only. Your Python model replaces it later.</p></div><div class=card><h2>Evidence</h2><div id=evid class=row></div></div><div class=card><h2>Candidate workspace</h2><pre id=wk class=mono style="white-space:pre-wrap;max-height:130px;overflow:auto;margin:0"></pre></div><div class=card><h2>Decision</h2><div class=row><button class=pri data-a=dec data-x=Shortlisted>Shortlist</button><button data-a=dec data-x=Hold>Hold</button><button class=dng data-a=dec data-x=Rejected>Reject</button></div><div id=logp class="log mono" style="margin-top:10px"></div></div></aside></div>`}
+const slot='<div id=slf style="width:100%;height:100%"></div>';
+function cjoin(){const v=I();return`<main class=narrow><div class=row style="justify-content:flex-end"><button data-a=tgo data-x=0>Take tour</button></div><section class=card style="margin-top:8px"><div class="mu mono">YOU'RE INVITED</div><h1>${esc(v.name)}</h1><p class=mu>${v.type} interview. This session is recorded and your video is checked automatically to confirm it is you.</p><label>Your name<input id=nm></label><div class=vid style="margin-top:12px;max-height:240px">${slot}</div><div class="bar mic" style="margin-top:8px"><i class=st-ok style="width:0"></i></div><p id=cs class=mu>Camera and microphone are off.</p><div class=row><button data-a=cam>Turn on camera and microphone</button><button data-a=mic>Mute or unmute</button><button data-a=dcam>Use demo camera</button></div><label class=row style="margin-top:12px;color:var(--fg)"><input type=checkbox id=cn style="width:20px;min-height:20px">I agree to recording and automatic verification.</label><button class=pri data-a=enter style="margin-top:14px;width:100%">Enter waiting room</button><p id=err class=er></p></section></main>`}
+const cwait=()=>`<main class=narrow><section class=card style="text-align:center"><h1>Waiting to be admitted</h1><p class=mu>The interviewer will let you in shortly. Keep this tab open.</p><div class=vid style="max-height:240px">${slot}</div></section></main>`;
+const cdone=()=>`<main class=narrow><section class=card style="text-align:center"><h1>Thank you</h1><p class=mu>This session has ended. Your answers and session events were saved for the interviewer. You can close this tab.</p><button data-a=out>Back to start</button></section></main>`;
+function croom(){const v=I(),cd=v.type=='Coding';
+ const w=cd?`<div class=row><label style="margin:0">Language <select id=lgs style="width:auto">${v.langs.map(l=>`<option ${l==lang?'selected':''}>${l}</option>`).join('')}</select></label><span style="flex:1"></span><button class=pri data-a=run>Run</button></div><p class=mu>Write function <b>firstUnique(s)</b>: the first non-repeating character, or null.</p><textarea id=ed spellcheck=false>${esc(D[lang]??T[lang])}</textarea><h2 style="margin-top:10px;font-size:16px">Output</h2><pre id=out class=mono style="min-height:70px;white-space:pre-wrap;margin:0">Press Run.</pre><p class=mu style="font-size:12px">Pasting is turned off in this editor.</p>`
+ :`<div class="mu mono">QUESTION ${qi+1} OF ${Q.length}</div><h2 style="font-size:22px">${esc(Q[qi])}</h2><textarea id=pad style="font-family:inherit" placeholder="Type your answer here...">${esc(D['q'+qi]||'')}</textarea><div class=row style="margin-top:8px"><button data-a=nq data-x=-1 ${qi?'':'disabled'}>Previous</button><button class=pri data-a=nq data-x=1>${qi<Q.length-1?'Next':'Finish'}</button></div>`;
+ return hdr(esc(v.name),'<button class=dng data-a=leave>Leave</button>')+`<div class=g2><section><div class=vid><img id=adm alt="Interviewer video"><div class=self>${slot}</div><div id=ov class=ov style="display:none"></div></div><div class=card style="margin-top:10px"><h2>Chat</h2><div id=chat class=chat></div><div class=row style="margin-top:8px"><input id=ci placeholder="Message" style="flex:1"><button data-a=say>Send</button></div></div><div class=row style="margin-top:8px"><div class="bar mic" style="flex:1 1 100px"><i class=st-ok style="width:0"></i></div><button data-a=mic>Mute or unmute</button><button data-a=cam>Camera and mic</button>${ST.demo?'<button data-a=ph>Demo: photo attack on/off</button>':''}</div><p class=mu style="font-size:13px">Recorded with your consent. Your video is checked automatically.</p></section><section class=card>${w}</section></div>`}
+function render(){document.body.className=(S.v=='adash'||S.v=='alive'||S.v=='alogin')?'dk':'';$('#app').innerHTML=({alogin,center,adash,alive,cjoin,cwait,croom,cdone})[S.v]();
+ const s=$('#slf');if(s)s.append(V);const r=$('#rem');if(r&&F[S.sel])r.src=F[S.sel].img;const a=$('#adm');if(a&&LAST.a)a.src=LAST.a;upd();if(S.v=='cjoin'&&!ls.g('fg_tour')&&!window._t){window._t=1;tour(0)}}
+async function act2(a,x){
+ if(a=='login'){const e=$('#em').value.trim().toLowerCase(),u=DB.users.find(z=>z.e==e);if(u&&u.h==await sha($('#pw').value)){S.user=u.e;S.tab='Interviews';aud('Signed in');save();S.v='adash';render()}else $('#err').textContent='Wrong email or password.';return 1}
+ if(a=='staff'){S.v='alogin';render();return 1}
+ if(a=='out'){const w=S.user;if(w){aud('Signed out');save()}stopCam();S={v:w?'alogin':'center'};render();return 1}
+ if(a=='cam'){camMsg(await startCam());return 1}
+ if(a=='dcam'){demoCam();camMsg({ok:1,demo:1});return 1}
+ if(a=='acam'){if(cam)stopCam();else{const r=await startCam();if(r.ok)startSend('a');else{demoCam();startSend('a');toast('Real camera unavailable ('+r.err+'). Using demo camera.')}}return 1}
+ if(a=='leave'){const c=C();c.st='done';lg(c,'Left session');save();stopCam();S.v='cdone';render();return 1}
+ if(a=='mic'){if(cam){const t=cam.getAudioTracks();t.forEach(z=>z.enabled=!z.enabled);toast(t.length?(t[0].enabled?'Microphone on':'Microphone muted'):'No microphone available')}else toast('Turn on the camera first');return 1}
+ if(a=='ph'){ST.static=!ST.static;toast(ST.static?'Photo attack simulated: no motion':'Live motion restored');return 1}
+ if(a=='tgo'){tour(+x);return 1}
+ if(a=='tskip'){tour(-1);return 1}
+ if(a=='tab'){S.tab=x;S.rk=null;render();return 1}
+ if(a=='ropen'){S.rk=S.rk==x?null:x;render();return 1}
+ if(a=='rdel'){delete DB.rec[x];aud('Record deleted');save();render();return 1}
+ if(a=='endc'){const c=I().c[S.sel];if(!c)return 1;c.st='done';lg(c,'Session ended by interviewer');saveRec(S.code,S.sel);updA();return 1}
+ if(a=='uadd'){const e=$('#ue').value.trim().toLowerCase(),p=$('#up').value;if(!e||p.length<4||DB.users.some(z=>z.e==e)){$('#err').textContent='Enter a new email and a password of 4 or more characters.';return 1}DB.users.push({e,r:$('#ur').value,h:await sha(p)});aud('Account added: '+e);save();render();return 1}
+ if(a=='udel'){DB.users=DB.users.filter(z=>z.e!=x);aud('Account removed: '+x);save();render();return 1}
+ if(a=='sync'){if(!CONFIG.API_BASE)toast('Not connected yet. Needs your backend.');else try{const r=await fetch(CONFIG.API_BASE+'/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rec:DB.rec,aud:DB.aud})});toast(r.ok?'Synced':'Server error '+r.status)}catch(e){toast('Could not reach server')}return 1}
+ if(a=='wipe'){if(S.w){DB={ivs:{},users:DB.users,rec:{},aud:[]};save();S.w=0;aud('Demo data erased')}else S.w=1;render();return 1}
+ return 0}
+
+const send=t=>ch.postMessage({t:'w',code:S.code,cid:S.cid,txt:t});
+async function act(a,x){if(await act2(a,x))return;
+ if(a=='login'){if($('#pw').value=='demo'){S.v='adash';render()}else $('#err').textContent='Wrong password. Use: demo'}
+ else if(a=='join'){const c=$('#cc').value.trim().toUpperCase();if(!DB.ivs[c])$('#err').textContent='Code not found. Ask your interviewer.';else{S.code=c;S.v='cjoin';render()}}
+ else if(a=='create'){const c=Math.random().toString(36).slice(2,8).toUpperCase(),l=[...document.querySelectorAll('.lgc:checked')].map(e=>e.value);DB.ivs[c]={name:$('#nm').value||'Interview',type:$('#ty').value,level:$('#lv').value,langs:l.length?l:['JavaScript'],c:{},chat:[]};save();render()}
+ else if(a=='open'){S.code=x;S.sel=null;S.v='alive';render()}
+ else if(a=='back'){stopCam();S.v='adash';render()}
+ else if(a=='out'){stopCam();S={v:'home'};render()}
+ else if(a=='cam'){const ok=await startCam();$('#cs').textContent=ok?'Camera is on.':'Camera not available here. You can still join. Open the page in its own tab for camera access.'}
+ else if(a=='enter'){const n=$('#nm').value.trim();if(!n||!$('#cn').checked){$('#err').textContent='Enter your name and tick the consent box.';return}const id=Date.now().toString(36);I().c[id]={name:n,st:'waiting',log:[],ch:null,t0:Date.now()};S.cid=id;lg(C(),'Joined waiting room'+(cam?'':' (no camera)'));save();S.v='cwait';render();startSend('c')}
+ else if(a=='adm'){const c=I().c[x];c.st='live';lg(c,'Admitted');if(!S.sel)S.sel=x;save();updA()}
+ else if(a=='no'){const c=I().c[x];c.st='no';lg(c,'Not admitted');save();updA()}
+ else if(a=='sel'){S.sel=x;const r=$('#rem');if(r)r.src=F[x]?F[x].img:'';updA()}
+ else if(a=='acam'){if(cam)stopCam();else if(await startCam())startSend('a')}
+ else if(a=='chal'){const c=I().c[S.sel];if(!c)return;const o=['Turn your head slowly to the left','Blink twice','Show three fingers to the camera','Read aloud: '+(1000+Math.random()*9000|0)];c.ch={t:o[Math.random()*o.length|0]};lg(c,'Challenge sent: '+c.ch.t);save();updA()}
+ else if(a=='cd'){const c=C();lg(c,'Challenge answered by candidate (not machine-checked yet)');c.ch=null;save();updR()}
+ else if(a=='flag'){const c=I().c[S.sel];if(!c)return;lg(c,'Moment flagged by interviewer');const f=F[S.sel];if(f){EV.unshift({t:clk(),img:f.img,l:f.res.live});EV.length=Math.min(EV.length,6)}save();updA()}
+ else if(a=='dec'){const c=I().c[S.sel];if(!c)return;c.dec=x;lg(c,'Decision: '+x);save();updA()}
+ else if(a=='say'){const i=$('#ci');if(!i.value.trim())return;I().chat.push({w:S.v=='alive'?'a':'c',n:C()?C().name:'',t:i.value});i.value='';save();chatH()}
+ else if(a=='leave'){const c=C();c.st='done';lg(c,'Left session');save();stopCam();S.v='cdone';render()}
+ else if(a=='nq'){const n=qi+ +x;if(n>=Q.length){act('leave');return}qi=Math.max(0,n);render()}
+ else if(a=='run'){const src=$('#ed').value,o=$('#out');
+  if(lang!='JavaScript')o.textContent='[Runner not connected] '+lang+' will run on your backend sandbox (for example Judge0 or Piston).';
+  else try{const f=new Function(src+'\nreturn typeof firstUnique=="function"?firstUnique:null')();if(!f)o.textContent='Define function firstUnique(s).';
+   else o.textContent=[['aabbc','c'],['loveleetcode','v'],['aabb',null]].map(([s,e],i)=>'Test '+(i+1)+': '+((f(s)??null)===e?'Passed':'Failed (got '+f(s)+')')).join('\n')}catch(e){o.textContent='Error: '+e.message}
+  const c=C();lg(c,'Ran code ('+lang+')');save();send(lang+'\n'+src+'\n--- Output ---\n'+o.textContent)}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b)act(b.dataset.a,b.dataset.x)});
+document.addEventListener('input',e=>{const t=e.target;if(t.id=='ed'){D[lang]=t.value;send(lang+'\n'+t.value)}else if(t.id=='pad'){D['q'+qi]=t.value;send('Q'+(qi+1)+': '+t.value)}});
+document.addEventListener('change',e=>{if(e.target.id=='lgs'){D[lang]=$('#ed').value;lang=e.target.value;const c=C();lg(c,'Language changed to '+lang);save();render()}});
+document.addEventListener('paste',e=>{if(e.target.id=='ed'){e.preventDefault();const c=C();if(c){lg(c,'Paste attempt blocked');save()}}});
+S.v=location.hash.startsWith('#/admin')?'alogin':'center';const mm=location.hash.match(/^#\/join\/(\w+)/);if(mm)S.pre=mm[1].toUpperCase();render();
+</script></body></html>
